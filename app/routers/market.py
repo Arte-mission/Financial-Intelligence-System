@@ -13,10 +13,15 @@ from app.services.sentiment_service import (
 )
 from app.database import get_db
 from app.models import NewsArticle, MarketMoodSnapshot
+from app.utils.config import settings
 import time
 import logging
 
 logger = logging.getLogger(__name__)
+
+# NewsData is optional. The app runs normally without it.
+# Only attempt the fallback when a key is actually configured.
+NEWSDATA_ENABLED: bool = bool(settings.NEWSDATA_API_KEY)
 
 router = APIRouter(prefix="/market-mood", tags=["Market Sentiment"])
 
@@ -48,9 +53,11 @@ def _make_fingerprint(headlines: list, score: float, pulse: str, climate: str) -
 @router.get("", response_model=MarketMoodResponse)
 def get_market_sentiment(db: Session = Depends(get_db)):
     """
-    Fetches the latest headlines for Nepal business via NewsData, calculates sentiments,
-    computes average score, returns overall mood, and saves snapshot to SQLite.
-    Includes a 180-second memory cache.
+    Primary source: OnlineKhabar (Nepal-native financial news).
+    Fallback: NewsData.io — only used when NEWSDATA_API_KEY is configured
+    and OnlineKhabar yields fewer than MIN_ANALYZED_BEFORE_FALLBACK relevant articles.
+    App runs fully in OnlineKhabar-only mode when the key is absent.
+    Includes a 600-second memory cache (10 min — matches realistic Nepal news cadence).
     """
     global _mood_cache
     current_time = time.time()
@@ -95,15 +102,20 @@ def get_market_sentiment(db: Session = Depends(get_db)):
         logger.warning(f"OnlineKhabar pipeline failed, proceeding to fallback: {e}")
         ok_added = 0
 
-    # 2. Fallback: NewsData if primary didn't meet minimum
-    if ok_added < MIN_ANALYZED_BEFORE_FALLBACK:
+    # 2. Optional fallback: NewsData (only when key is configured)
+    if ok_added < MIN_ANALYZED_BEFORE_FALLBACK and NEWSDATA_ENABLED:
         try:
             nd_articles, _ = fetch_nepal_business_news()
             nd_added = _dedup_add(nd_articles, "NewsData")
             source_breakdown["NewsData"] = nd_added
             logger.info(f"NewsData fallback contributed {nd_added} additional articles")
         except Exception as e:
-            logger.warning(f"NewsData fallback also failed: {e}")
+            logger.warning(f"NewsData fallback failed (continuing with OnlineKhabar only): {e}")
+    elif ok_added < MIN_ANALYZED_BEFORE_FALLBACK and not NEWSDATA_ENABLED:
+        logger.info(
+            f"OnlineKhabar yielded {ok_added} articles (below threshold of {MIN_ANALYZED_BEFORE_FALLBACK}). "
+            "NewsData not configured — proceeding with OnlineKhabar-only mode."
+        )
 
     query_used = "OnlineKhabar" + (" + NewsData" if source_breakdown["NewsData"] > 0 else "")
 

@@ -24,8 +24,8 @@ def fetch_nepal_business_news() -> Tuple[List[Dict[str, Any]], str]:
     Returns (articles, queries_used_summary).
     """
     api_key = settings.NEWSDATA_API_KEY
-    if not api_key or api_key == "your_key_here":
-        logger.warning("NEWSDATA_API_KEY is not configured.")
+    if not api_key:
+        logger.info("NewsData not configured — running in OnlineKhabar-only mode.")
         return [], ""
 
     url = "https://newsdata.io/api/1/news"
