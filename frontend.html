@@ -1,0 +1,1858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datus AI — Nepal Investor Intelligence</title>
+    <meta name="description" content="Datus AI delivers analyst-grade investment signals for NEPSE stocks — combining company events, market mood, and AI-assisted sentiment into a single trustworthy view.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:          #07090d;
+            --surface:     rgba(14, 20, 32, 0.85);
+            --surface-2:   rgba(20, 28, 44, 0.7);
+            --text:        #f1f5f9;
+            --text-muted:  #64748b;
+            --text-dim:    #334155;
+            --accent:      #3b82f6;
+            --accent-glow: rgba(59,130,246,0.25);
+            --border:      rgba(255,255,255,0.07);
+            --border-2:    rgba(255,255,255,0.12);
+            --glass:       rgba(255,255,255,0.025);
+            --glass-hover: rgba(255,255,255,0.045);
+
+            --bullish:      #22c55e;
+            --mild-bullish: #34d399;
+            --neutral:      #94a3b8;
+            --mild-bearish: #f59e0b;
+            --bearish:      #ef4444;
+
+            --radius:   20px;
+            --radius-sm: 12px;
+            --shadow:   0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        /* ── LAYOUT ─────────────────────────────── */
+        .page-wrap { max-width: 1280px; margin: 0 auto; padding: 0 2rem 4rem; }
+
+        /* ── HEADER ─────────────────────────────── */
+        .site-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1.5rem 0; margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(7,9,13,0.9); backdrop-filter: blur(16px);
+        }
+        .logo { display: flex; align-items: center; gap: 0.875rem; }
+        .logo-mark {
+            width: 38px; height: 38px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .logo-name {
+            font-size: 1rem; font-weight: 700;
+            letter-spacing: 0.18em; text-transform: uppercase;
+        }
+        .logo-name-sep {
+            color: rgba(255,255,255,0.25); font-weight: 300;
+            margin: 0 0.35em; letter-spacing: 0;
+        }
+        .logo-name-ai {
+            font-weight: 400; color: rgba(255,255,255,0.7);
+        }
+        .logo-tagline { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+
+        .header-actions { display: flex; gap: 0.75rem; align-items: center; }
+        .btn-pill {
+            background: var(--glass); border: 1px solid var(--border-2);
+            color: var(--text-muted); font-size: 0.8rem; font-weight: 600;
+            padding: 0.45rem 1rem; border-radius: 20px; cursor: pointer;
+            transition: all 0.2s; letter-spacing: 0.3px;
+            display: flex; align-items: center; gap: 0.4rem;
+        }
+        .btn-pill:hover { background: var(--glass-hover); color: var(--text); border-color: var(--border-2); }
+        .btn-pill.active { background: rgba(59,130,246,0.15); color: var(--accent); border-color: var(--accent); }
+        .btn-count { background: var(--accent); color: #fff; border-radius: 10px; padding: 1px 6px; font-size: 0.7rem; }
+
+        /* ── SNAPSHOT BAR ──────────────────────── */
+        #snapshotBar {
+            display: grid; grid-template-columns: 1fr 1fr auto;
+            gap: 1px; background: var(--border);
+            border: 1px solid var(--border); border-radius: var(--radius-sm);
+            overflow: hidden; margin-bottom: 2rem;
+        }
+        .snap-cell {
+            background: var(--surface); padding: 0.875rem 1.25rem;
+            display: flex; flex-direction: column; gap: 0.2rem;
+        }
+        .snap-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text-muted); font-weight: 600; }
+        .snap-value { font-size: 1.05rem; font-weight: 800; }
+        .snap-note { font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; }
+        .snap-summary {
+            background: var(--surface); padding: 0.875rem 1.25rem;
+            grid-column: 1/-1; border-top: 1px solid var(--border);
+            font-size: 0.85rem; color: rgba(255,255,255,0.7); line-height: 1.5;
+        }
+        .snap-summary strong { color: var(--text); }
+
+        /* ── HERO ────────────────────────────────── */
+        .hero { text-align: center; padding: 2.5rem 0 2rem; }
+        .hero h2 { font-size: 2.6rem; font-weight: 900; letter-spacing: -1.5px; margin: 0 0 0.75rem; }
+        .hero h2 span { background: linear-gradient(90deg, #3b82f6, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero p { color: var(--text-muted); max-width: 580px; margin: 0 auto 2rem; font-size: 1rem; line-height: 1.65; }
+
+        /* ── SEARCH ─────────────────────────────── */
+        .search-wrap { max-width: 620px; margin: 0 auto; position: relative; }
+        .search-box {
+            display: flex; align-items: center;
+            background: var(--surface); border: 1px solid var(--border-2);
+            border-radius: var(--radius); padding: 0.4rem;
+            transition: all 0.25s; box-shadow: var(--shadow);
+        }
+        .search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+        .search-box input {
+            flex: 1; background: transparent; border: none; color: var(--text);
+            padding: 0.85rem 1.25rem; font-size: 1rem; outline: none; font-family: inherit;
+        }
+        .search-box input::placeholder { color: var(--text-muted); }
+        .search-btn {
+            background: var(--accent); color: #fff; border: none;
+            padding: 0.75rem 2rem; border-radius: 14px;
+            font-weight: 700; font-size: 0.95rem; cursor: pointer;
+            transition: all 0.2s; font-family: inherit;
+        }
+        .search-btn:hover { filter: brightness(1.15); transform: translateY(-1px); }
+        .quick-tags { display: flex; justify-content: center; gap: 0.5rem; margin-top: 1.25rem; flex-wrap: wrap; }
+        .q-tag {
+            background: var(--glass); border: 1px solid var(--border);
+            color: var(--text-muted); padding: 0.3rem 1rem;
+            border-radius: 20px; font-size: 0.82rem; cursor: pointer; transition: all 0.2s;
+        }
+        .q-tag:hover { background: var(--glass-hover); color: var(--text); border-color: var(--border-2); }
+
+        .search-dropdown {
+            position: absolute; top: calc(100% + 8px);
+            left: 0; right: 0; background: #0f1623;
+            border: 1px solid var(--border-2); border-radius: var(--radius-sm);
+            max-height: 280px; overflow-y: auto; z-index: 50; display: none;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+        }
+        .s-item {
+            padding: 0.9rem 1.25rem; cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border); font-size: 0.9rem;
+            transition: background 0.15s;
+        }
+        .s-item:last-child { border-bottom: none; }
+        .s-item:hover { background: var(--glass-hover); }
+
+        /* ── MAIN GRID ──────────────────────────── */
+        .main-grid {
+            display: grid; grid-template-columns: 1fr 390px;
+            gap: 2rem; align-items: flex-start; margin-top: 2rem;
+        }
+        @media (max-width: 900px) {
+            .main-grid { grid-template-columns: 1fr; }
+            .right-col { position: static !important; }
+        }
+
+        /* ── CARD BASE ──────────────────────────── */
+        .card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 2rem;
+            backdrop-filter: blur(16px); box-shadow: var(--shadow);
+        }
+        .card + .card { margin-top: 1.5rem; }
+
+        /* ── SKELETON ───────────────────────────── */
+        @keyframes shimmer {
+            0% { background-position: -900px 0; }
+            100% { background-position: 900px 0; }
+        }
+        .skel {
+            background: rgba(255,255,255,0.04);
+            background-image: linear-gradient(90deg, rgba(255,255,255,0) 0, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0) 100%);
+            background-size: 900px 100%; animation: shimmer 1.8s infinite linear;
+            border-radius: 8px;
+        }
+
+        /* ── EMPTY STATE ────────────────────────── */
+        .empty-state {
+            text-align: center; padding: 3.5rem 2rem;
+            border: 1px dashed rgba(255,255,255,0.1);
+            border-radius: var(--radius); background: transparent;
+        }
+        .empty-state h3 { font-size: 1.75rem; font-weight: 900; letter-spacing: -0.5px; margin: 0 0 0.75rem; }
+        .empty-state p { color: var(--text-muted); max-width: 520px; margin: 0 auto 2.5rem; font-size: 0.95rem; line-height: 1.7; }
+        .pillars { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; text-align: left; margin-top: 0.5rem; }
+        .pillar {
+            background: var(--glass); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 1.25rem;
+        }
+        .pillar-icon { font-size: 1.4rem; margin-bottom: 0.5rem; }
+        .pillar strong { display: block; margin-bottom: 0.35rem; font-size: 0.95rem; }
+        .pillar span { color: var(--text-muted); font-size: 0.82rem; line-height: 1.5; }
+
+        /* ── STOCK CARD ─────────────────────────── */
+        .stock-header {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 1.75rem; gap: 1rem;
+        }
+        .ticker-label { font-size: 2rem; font-weight: 900; letter-spacing: -1px; margin: 0 0 0.25rem; }
+        .company-label { color: var(--text-muted); font-size: 0.95rem; margin: 0; }
+        .sector-chip {
+            font-size: 0.7rem; background: var(--glass); border: 1px solid var(--border);
+            color: var(--text-muted); padding: 0.3rem 0.75rem; border-radius: 20px;
+            text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-left: 0.75rem;
+        }
+        .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
+        .watchlist-btn {
+            background: var(--glass); border: 1px solid var(--border);
+            color: var(--text-muted); font-size: 0.78rem; font-weight: 600;
+            padding: 0.4rem 0.875rem; border-radius: 20px; cursor: pointer;
+            transition: all 0.2s; display: flex; align-items: center; gap: 0.35rem;
+        }
+        .watchlist-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .watchlist-btn.saved { border-color: var(--bullish); color: var(--bullish); background: rgba(34,197,94,0.08); }
+
+        /* ── CONVICTION BLOCK ───────────────────── */
+        .conviction-block {
+            padding: 1.75rem; background: rgba(0,0,0,0.3);
+            border-radius: var(--radius-sm); border: 1px solid var(--border);
+            border-left: 5px solid var(--text-muted);
+            margin-bottom: 1.5rem; transition: border-left-color 0.3s;
+        }
+        .conviction-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+        .conviction-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); font-weight: 600; margin-bottom: 0.35rem; }
+        .conviction-value { font-size: 2.4rem; font-weight: 900; letter-spacing: -1px; }
+        .confidence-col { text-align: right; }
+        .confidence-val { font-size: 1.25rem; font-weight: 800; }
+        .confidence-ctx { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; margin-top: 0.4rem; max-width: 240px; text-align: right; }
+
+        /* ── WHY THIS MATTERS ───────────────────── */
+        .why-block {
+            background: rgba(59,130,246,0.07); border: 1px solid rgba(59,130,246,0.18);
+            border-radius: var(--radius-sm); padding: 0.875rem 1.25rem;
+            font-size: 0.88rem; color: rgba(255,255,255,0.8); line-height: 1.55;
+            margin-bottom: 1.25rem; display: flex; gap: 0.6rem; align-items: flex-start;
+        }
+        .why-icon { color: var(--accent); font-size: 0.9rem; margin-top: 0.1rem; flex-shrink: 0; }
+        .why-text strong { color: var(--text); }
+
+        /* ── ALIGNMENT BLOCK ────────────────────── */
+        .alignment-block {
+            padding: 1rem 1.25rem; background: var(--glass);
+            border-radius: var(--radius-sm); border: 1px solid var(--border);
+            border-left: 4px solid var(--accent); margin-bottom: 1.25rem;
+            display: none;
+        }
+        .alignment-block.contradictory { border-left-color: var(--bearish); background: rgba(239,68,68,0.08); }
+        .alignment-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.4rem; }
+        .align-label-row { display: flex; align-items: center; gap: 0.5rem; }
+        .align-badge {
+            font-size: 0.75rem; font-weight: 800; padding: 3px 10px;
+            border-radius: 12px; text-transform: uppercase; margin-left: auto;
+        }
+        .alignment-note { font-size: 0.88rem; color: rgba(255,255,255,0.8); line-height: 1.5; margin: 0; }
+
+        /* ── REASONING ──────────────────────────── */
+        .reasoning-block { margin-bottom: 1.25rem; }
+        .reason-heading {
+            font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px;
+            font-weight: 700; display: block; margin-bottom: 0.6rem;
+        }
+        .reason-list { margin: 0 0 1.25rem; padding-left: 1.4rem; }
+        .reason-list li { margin-bottom: 0.45rem; font-size: 0.9rem; line-height: 1.55; color: rgba(255,255,255,0.85); }
+
+        /* ── DRIVERS ────────────────────────────── */
+        .drivers-section { padding-top: 1.25rem; border-top: 1px solid var(--border); }
+        .section-label {
+            font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1.5px;
+            color: var(--text-muted); font-weight: 600; margin-bottom: 0.75rem;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .drivers-grid { display: flex; flex-direction: column; gap: 0.5rem; }
+        .driver-pill {
+            padding: 0.55rem 1rem; border-radius: 8px; font-size: 0.87rem;
+            border: 1px solid var(--border); background: var(--glass);
+            display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s;
+        }
+        .driver-pill.primary {
+            background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.18);
+            color: var(--text); font-weight: 600;
+        }
+        .driver-pill.secondary { opacity: 0.6; font-size: 0.83rem; }
+        .driver-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+        /* ── PRICE METRICS ──────────────────────── */
+        .price-grid {
+            display: grid; grid-template-columns: repeat(3,1fr);
+            gap: 1rem; padding: 1.25rem; margin-bottom: 1.5rem;
+            background: rgba(0,0,0,0.2); border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+        }
+        .metric-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 600; margin-bottom: 0.35rem; }
+        .metric-val { font-size: 1.15rem; font-weight: 700; }
+        .price-up { color: var(--bullish); }
+        .price-dn { color: var(--bearish); }
+
+        /* ── COMPANY EVENT ──────────────────────── */
+        .event-section { padding-top: 1.5rem; border-top: 1px solid var(--border); margin-bottom: 1.5rem; }
+        .event-box {
+            background: rgba(0,0,0,0.2); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 1.25rem;
+        }
+        .source-chip {
+            font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+            padding: 3px 9px; border-radius: 6px; margin-bottom: 0.75rem;
+            display: inline-block; background: var(--accent); color: #fff;
+        }
+        .event-title { font-size: 1rem; font-weight: 600; line-height: 1.55; margin: 0; }
+        .event-link {
+            display: block; margin-top: 1rem; padding: 1rem 1.25rem;
+            background: var(--glass); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); text-decoration: none; color: var(--text);
+            transition: all 0.2s; font-size: 0.88rem; line-height: 1.5;
+        }
+        .event-link:hover { background: var(--glass-hover); border-color: var(--border-2); transform: translateY(-2px); }
+        .event-link-label { font-size: 0.78rem; color: var(--accent); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 0.4rem; }
+
+        /* ── AI BLOCK ───────────────────────────── */
+        .ai-block { padding-top: 1.5rem; border-top: 1px solid var(--border); margin-bottom: 1.5rem; display: none; }
+        .ai-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .ai-badge {
+            font-size: 0.72rem; font-weight: 800; padding: 3px 10px;
+            border-radius: 6px; text-transform: uppercase;
+        }
+        .ai-body {
+            background: rgba(0,0,0,0.25); border-left: 4px solid var(--accent);
+            border-radius: var(--radius-sm); padding: 1.25rem;
+            font-size: 0.9rem; color: rgba(255,255,255,0.88); line-height: 1.7; font-style: italic;
+        }
+
+        /* ── MATERIALITY ────────────────────────── */
+        .mat-block { padding-top: 1.5rem; border-top: 1px solid var(--border); display: none; }
+        .mat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .mat-score { font-size: 0.80rem; color: var(--text-muted); background: var(--glass); padding: 3px 10px; border-radius: 6px; }
+        .mat-list { display: flex; flex-direction: column; gap: 0.6rem; }
+        .mat-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0,0,0,0.2); padding: 0.875rem 1rem;
+            border-radius: 10px; border: 1px solid var(--border); gap: 1rem;
+        }
+        .mat-text { font-size: 0.87rem; color: rgba(255,255,255,0.85); line-height: 1.5; flex: 1; }
+        .mat-badges { display: flex; gap: 0.5rem; align-items: center; flex-shrink: 0; }
+        .mat-badge { font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 10px; border-width: 1px; border-style: solid; }
+
+        /* ── FRESHNESS ──────────────────────────── */
+        .freshness { font-size: 0.73rem; color: var(--text-muted); font-style: italic; opacity: 0.85; }
+        .countdown { font-size: 0.7rem; color: var(--text-dim); }
+
+        /* ── ERROR ──────────────────────────────── */
+        .error-banner {
+            display: none; background: rgba(239,68,68,0.1); color: var(--bearish);
+            border: 1px solid rgba(239,68,68,0.25); border-radius: var(--radius-sm);
+            padding: 1rem 1.25rem; font-size: 0.9rem; font-weight: 600; text-align: center;
+        }
+
+        /* ── RIGHT COLUMN ───────────────────────── */
+        .right-col { position: sticky; top: 5rem; }
+
+        /* ── MARKET CARD ────────────────────────── */
+        .mood-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; }
+        .mood-title { font-size: 1.1rem; font-weight: 800; letter-spacing: -0.3px; }
+        .mood-desc { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.5; }
+
+        .two-layer {
+            border: 1px solid var(--border); border-radius: var(--radius-sm);
+            /* overflow must NOT be hidden — tooltips and drift badge need to escape */
+            overflow: visible;
+            margin-bottom: 1.25rem;
+            position: relative; transition: box-shadow 0.5s;
+        }
+        /* Clip only the rounded corners visually without clipping children */
+        .two-layer-inner {
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+        .layer-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1.1rem 1.25rem;
+        }
+        .layer-row.pulse-row { background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--border); }
+        .layer-row.climate-row { background: rgba(0,0,0,0.15); border-radius: 0 0 var(--radius-sm) var(--radius-sm); }
+        .layer-key { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); font-weight: 600; margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.4rem; }
+        .layer-val { font-size: 1.2rem; font-weight: 800; }
+        /* Score column: never shrinks, given explicit min-width so it won't be squeezed */
+        .score-col { text-align: right; flex-shrink: 0; min-width: 64px; }
+        .layer-score { font-size: 1.8rem; font-weight: 800; letter-spacing: -1px; transition: opacity 0.3s; }
+        .layer-score-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+        .coverage-chip {
+            font-size: 0.7rem; padding: 2px 8px; border-radius: 10px;
+            font-weight: 600; border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.04); color: var(--text-muted);
+            flex-shrink: 0;
+        }
+        /* Drift badge: sit ABOVE the two-layer box, not inside, to avoid overlap */
+        .drift-badge {
+            position: absolute; top: -12px; right: 0.75rem;
+            font-size: 0.7rem; font-weight: 800; padding: 3px 9px;
+            border-radius: 10px; display: none; z-index: 5;
+        }
+
+        /* ── DELTA ──────────────────────────────── */
+        .delta-block {
+            background: var(--glass); border: 1px solid var(--border);
+            border-left: 3px solid var(--text-muted); border-radius: var(--radius-sm);
+            padding: 0.875rem 1rem; margin-bottom: 1.25rem; display: none;
+        }
+        .delta-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); font-weight: 600; margin-bottom: 0.4rem; }
+        .delta-text { font-size: 0.85rem; color: rgba(255,255,255,0.85); line-height: 1.55; margin: 0; }
+
+        /* ── HEADLINES ──────────────────────────── */
+        .headlines-section { margin-bottom: 1.25rem; }
+        .hl-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.75rem; }
+        .hl-source-note { font-size: 0.7rem; color: var(--text-dim); }
+        .hl-item {
+            padding: 0.875rem 1rem; background: var(--glass); border: 1px solid var(--border);
+            border-radius: 10px; font-size: 0.83rem; line-height: 1.5; color: rgba(255,255,255,0.75);
+        }
+        .hl-item + .hl-item { margin-top: 0.5rem; }
+
+        /* ── WHY MACRO ──────────────────────────── */
+        .why-macro {
+            background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.15);
+            border-radius: 10px; padding: 0.75rem 1rem; margin-bottom: 1.25rem;
+            font-size: 0.82rem; color: rgba(255,255,255,0.75); line-height: 1.5; display: none;
+        }
+
+        /* ── HISTORY ────────────────────────────── */
+        .history-section { padding-top: 1.25rem; border-top: 1px solid var(--border); }
+        .history-timeline { display: flex; flex-direction: column; gap: 0.5rem; }
+        .ht-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.6rem 0.875rem; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--glass);
+            font-size: 0.82rem;
+        }
+        .ht-time { color: var(--text-muted); }
+        .ht-val { font-weight: 700; }
+
+        /* ── WATCHLIST PANEL ────────────────────── */
+        #watchlistPanel { margin-bottom: 1.5rem; display: none; }
+        .wl-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.75rem 0.875rem; background: var(--glass); border: 1px solid var(--border);
+            border-radius: 10px; cursor: pointer; transition: all 0.2s; margin-bottom: 0.5rem;
+        }
+        .wl-item:hover { background: var(--glass-hover); border-color: var(--border-2); }
+        .wl-ticker { font-weight: 700; font-size: 0.9rem; }
+        .wl-name { font-size: 0.75rem; color: var(--text-muted); }
+        .wl-sentiment { font-size: 0.78rem; font-weight: 700; }
+        .wl-remove {
+            color: var(--text-dim); font-size: 0.9rem; padding: 0 0.25rem;
+            cursor: pointer; transition: color 0.2s; line-height: 1;
+        }
+        .wl-remove:hover { color: var(--bearish); }
+        .wl-empty { font-size: 0.82rem; color: var(--text-muted); text-align: center; padding: 1rem; }
+
+        /* ── COMPARE MODE ───────────────────────── */
+        #comparePanel { display: none; margin-bottom: 2rem; }
+        .compare-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+        .compare-card {
+            background: var(--surface-2); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 1.25rem; position: relative;
+        }
+        .cmp-remove {
+            position: absolute; top: 0.75rem; right: 0.75rem;
+            font-size: 0.75rem; color: var(--text-dim); cursor: pointer;
+            padding: 2px 6px; border-radius: 6px; transition: all 0.2s;
+        }
+        .cmp-remove:hover { background: rgba(239,68,68,0.15); color: var(--bearish); }
+        .cmp-ticker { font-size: 1.15rem; font-weight: 800; margin-bottom: 0.15rem; }
+        .cmp-name { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.875rem; }
+        .cmp-row { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.35rem; }
+        .cmp-key { color: var(--text-muted); }
+        .cmp-val { font-weight: 700; }
+        .cmp-driver { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; font-style: italic; }
+        .cmp-loading { font-size: 0.8rem; color: var(--text-muted); text-align: center; padding: 1rem 0; }
+
+        /* ── TOOLTIP ────────────────────────────── */
+        .tip {
+            display: inline-flex; align-items: center;
+            margin-left: 0.4rem; cursor: help;
+        }
+        .tip-icon {
+            width: 15px; height: 15px; border-radius: 50%;
+            background: rgba(255,255,255,0.07); border: 1px solid var(--border);
+            color: var(--text-muted); font-size: 0.65rem; font-weight: 800;
+            display: flex; align-items: center; justify-content: center;
+            font-family: monospace; transition: all 0.2s; flex-shrink: 0;
+            user-select: none;
+        }
+        .tip:hover .tip-icon,
+        .tip.tip-open .tip-icon { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+        /* Single shared global tooltip overlay — lives on <body>, never clipped */
+        #globalTip {
+            display: none;
+            position: fixed;
+            width: 230px;
+            background: #0d1520;
+            color: var(--text);
+            border: 1px solid var(--border-2);
+            border-radius: 10px;
+            padding: 0.875rem 1rem;
+            font-size: 0.8rem;
+            line-height: 1.55;
+            font-weight: 400;
+            text-align: left;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.75);
+            z-index: 9999;
+            pointer-events: none;
+            white-space: normal;
+            letter-spacing: normal;
+            text-transform: none;
+            transition: opacity 0.15s ease;
+            opacity: 0;
+        }
+        #globalTip.tip-visible { display: block; opacity: 1; }
+        /* Arrow pseudo-elements */
+        #globalTip::before {
+            content: "";
+            position: absolute;
+            border: 5px solid transparent;
+        }
+        #globalTip.arrow-down::before {
+            top: 100%; left: var(--arrow-left, 50%);
+            margin-left: -5px;
+            border-top-color: #0d1520;
+        }
+        #globalTip.arrow-up::before {
+            bottom: 100%; left: var(--arrow-left, 50%);
+            margin-left: -5px;
+            border-bottom-color: #0d1520;
+        }
+
+        /* ── CHANGE ALERT ───────────────────────── */
+        #changeAlert {
+            display: none; padding: 0.7rem 1rem;
+            background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3);
+            border-radius: 10px; font-size: 0.82rem; color: var(--mild-bearish);
+            margin-bottom: 1rem; display: flex; align-items: center; gap: 0.6rem;
+        }
+    </style>
+</head>
+<body>
+<div class="page-wrap">
+
+    <!-- ── HEADER ─────────────────────────────── -->
+    <header class="site-header">
+        <div class="logo">
+            <!-- Refined SVG mark: circle + dual-line signal baseline -->
+            <div class="logo-mark">
+                <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Datus AI mark">
+                    <!-- Outer circle -->
+                    <circle cx="19" cy="19" r="16.5" stroke="white" stroke-width="1.75"/>
+                    <!-- Primary baseline: center, full width inset -->
+                    <line x1="8" y1="19" x2="30" y2="19" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                    <!-- Secondary signal line: shorter, 4px above, lighter -->
+                    <line x1="11" y1="14.5" x2="27" y2="14.5" stroke="white" stroke-width="0.75" stroke-linecap="round" opacity="0.5"/>
+                </svg>
+            </div>
+            <div>
+                <div class="logo-name">DATUS<span class="logo-name-sep">|</span><span class="logo-name-ai">AI</span></div>
+                <div class="logo-tagline">Nepal Investor Intelligence</div>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="btn-pill" id="btnCompare" onclick="toggleCompareMode()">
+                ⚡ Compare <span class="btn-count" id="cmpCount" style="display:none">0</span>
+            </button>
+            <button class="btn-pill" id="btnWatchlist" onclick="toggleWatchlistPanel()">
+                ★ Watchlist <span class="btn-count" id="wlCount">0</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- ── SNAPSHOT BAR ─────────────────────────── -->
+    <div id="snapshotBar">
+        <div class="snap-cell">
+            <div class="snap-label">
+                Market Pulse
+                <span class="tip" data-tip="Short-term market tone derived from NEPSE and listed-company news. Reflects current trading sentiment.">
+                    <span class="tip-icon">?</span>
+                </span>
+            </div>
+            <div class="snap-value" id="snapPulse" style="color:var(--neutral)">—</div>
+        </div>
+        <div class="snap-cell">
+            <div class="snap-label">
+                Macro Climate
+                <span class="tip" data-tip="Broader Nepal financial backdrop, incorporating banking, NRB policy, and economic data. Only shown when sufficient coverage is available.">
+                    <span class="tip-icon">?</span>
+                </span>
+            </div>
+            <div class="snap-value" id="snapClimate" style="color:var(--neutral)">—</div>
+        </div>
+        <div class="snap-cell">
+            <div class="snap-label">Confidence</div>
+            <div class="snap-value" id="snapConf" style="color:var(--neutral)">—</div>
+        </div>
+        <div class="snap-summary" id="snapSummary">
+            Loading today's market intelligence…
+        </div>
+    </div>
+
+    <!-- ── HERO + SEARCH ─────────────────────────── -->
+    <section class="hero" id="heroSection">
+        <h2>Understand NEPSE stocks <span>beyond the price</span></h2>
+        <p>Datus AI combines company signals, market mood, AI-assisted interpretation, and confidence-aware reasoning to explain what is happening, why it matters, and how strongly the signal is supported.</p>
+
+        <div class="search-wrap">
+            <form id="searchForm" class="search-box">
+                <input type="text" id="tickerInput" placeholder="Search ticker or company name — e.g. NABIL, HBL, NICA" autocomplete="off" required>
+                <button type="submit" class="search-btn">Analyze →</button>
+            </form>
+            <div id="searchDropdown" class="search-dropdown"></div>
+        </div>
+        <div class="quick-tags">
+            <span class="q-tag" onclick="searchTicker('NABIL')">NABIL</span>
+            <span class="q-tag" onclick="searchTicker('NICA')">NICA</span>
+            <span class="q-tag" onclick="searchTicker('HBL')">HBL</span>
+            <span class="q-tag" onclick="searchTicker('ADBL')">ADBL</span>
+            <span class="q-tag" onclick="searchTicker('GBIME')">GBIME</span>
+            <span class="q-tag" onclick="searchTicker('SCB')">SCB</span>
+        </div>
+        <div class="error-banner" id="errorMsg"></div>
+    </section>
+
+    <!-- ── COMPARE PANEL ─────────────────────────── -->
+    <div id="comparePanel">
+        <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                <strong style="font-size:0.9rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-muted)">Stock Comparison</strong>
+                <button class="btn-pill" onclick="clearCompare()" style="color:var(--bearish);border-color:rgba(239,68,68,0.3);">✕ Clear all</button>
+            </div>
+            <div class="compare-grid" id="compareGrid">
+                <div style="font-size:0.82rem;color:var(--text-muted);text-align:center;padding:2rem;grid-column:1/-1;">
+                    Search and add stocks to compare them side-by-side.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── MAIN GRID ───────────────────────────── -->
+    <div class="main-grid">
+
+        <!-- LEFT: Stock Intelligence -->
+        <div class="left-col">
+
+            <!-- Empty State -->
+            <div class="empty-state" id="emptyState">
+                <div style="font-size:2.5rem;margin-bottom:1rem;">📊</div>
+                <h3>Understand NEPSE stocks beyond the price</h3>
+                <p>Datus AI analyzes company signals, real-time news, and AI interpretation to tell you what is happening, why it matters, and how strongly the signal is supported.</p>
+                <div class="pillars">
+                    <div class="pillar">
+                        <div class="pillar-icon">🎯</div>
+                        <strong>Stock Sentiment</strong>
+                        <span>See whether the signal on a stock is bullish, bearish, or neutral, and by how much.</span>
+                    </div>
+                    <div class="pillar">
+                        <div class="pillar-icon">🛡️</div>
+                        <strong>Confidence & Alignment</strong>
+                        <span>Understand how reliable the signal is across multiple independent data layers.</span>
+                    </div>
+                    <div class="pillar">
+                        <div class="pillar-icon">🔍</div>
+                        <strong>Material Drivers</strong>
+                        <span>Identify the specific company events and market forces shaping each stock's outlook.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Skeleton -->
+            <div class="card" id="skeletonLoader" style="display:none;gap:2rem;flex-direction:column;">
+                <div style="display:flex;justify-content:space-between;">
+                    <div>
+                        <div class="skel" style="width:120px;height:2.4rem;margin-bottom:0.5rem;"></div>
+                        <div class="skel" style="width:200px;height:1rem;"></div>
+                    </div>
+                    <div class="skel" style="width:80px;height:2.4rem;border-radius:20px;"></div>
+                </div>
+                <div class="skel" style="width:100%;height:160px;border-radius:14px;"></div>
+                <div class="skel" style="width:60%;height:1rem;"></div>
+                <div class="skel" style="width:100%;height:1rem;"></div>
+                <div class="skel" style="width:80%;height:1rem;"></div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;">
+                    <div class="skel" style="height:3rem;border-radius:10px;"></div>
+                    <div class="skel" style="height:3rem;border-radius:10px;"></div>
+                    <div class="skel" style="height:3rem;border-radius:10px;"></div>
+                </div>
+            </div>
+
+            <!-- Stock Card -->
+            <div class="card" id="stockCard" style="display:none;flex-direction:column;">
+
+                <!-- Header -->
+                <div class="stock-header">
+                    <div>
+                        <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+                            <div class="ticker-label" id="uiTicker">—</div>
+                            <span class="sector-chip" id="uiSector">—</span>
+                        </div>
+                        <p class="company-label" id="uiCompanyName">—</p>
+                    </div>
+                    <div class="header-right">
+                        <span class="freshness" id="uiStockFreshness" style="display:none;"></span>
+                        <button class="watchlist-btn" id="watchlistBtn" onclick="toggleWatchlistEntry()">
+                            <span id="wlBtnIcon">★</span> <span id="wlBtnLabel">Add to Watchlist</span>
+                        </button>
+                        <button class="btn-pill" id="addToCompareBtn" onclick="addCurrentToCompare()" style="font-size:0.75rem;">
+                            ⚡ Add to Compare
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Conviction Block -->
+                <div class="conviction-block" id="convictionBlock">
+                    <div class="conviction-row">
+                        <div>
+                            <div class="conviction-label">Stock Sentiment</div>
+                            <div class="conviction-value" id="uiSentiment">—</div>
+                        </div>
+                        <div class="confidence-col">
+                            <div class="conviction-label" style="text-align:right;">
+                                Confidence
+                                <span class="tip" data-tip="How strongly the system trusts this signal. Depends on agreement between market mood, company events, AI interpretation, and news materiality.">
+                                    <span class="tip-icon">?</span>
+                                </span>
+                            </div>
+                            <div class="confidence-val" id="uiConfidence">—</div>
+                            <div class="confidence-ctx" id="uiConfidenceCtx"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Why This Matters -->
+                <div class="why-block" id="uiWhyMatters" style="display:none;">
+                    <div class="why-icon">💡</div>
+                    <div class="why-text" id="uiWhyText"></div>
+                </div>
+
+                <!-- Signal Alignment -->
+                <div class="alignment-block" id="alignmentBlock">
+                    <div class="alignment-row">
+                        <span id="alignWarningIcon" style="display:none;font-size:1.1rem;">⚠️</span>
+                        <div class="align-label-row">
+                            <strong style="font-size:0.8rem;text-transform:uppercase;letter-spacing:1.2px;">
+                                Signal Alignment
+                                <span class="tip" data-tip="Whether market conditions, company events, and AI interpretation all point in the same direction — or contradict each other.">
+                                    <span class="tip-icon">i</span>
+                                </span>
+                            </strong>
+                        </div>
+                        <span class="align-badge" id="alignBadge">—</span>
+                    </div>
+                    <p class="alignment-note" id="alignNote">—</p>
+                </div>
+
+                <!-- Reasoning -->
+                <div class="reasoning-block" id="reasoningBlock"></div>
+
+                <!-- Drivers -->
+                <div class="drivers-section">
+                    <div class="section-label">
+                        <span id="driverSectionLabel">Key Drivers</span>
+                        <span class="tip" data-tip="The strongest themes extracted from company events and market context. Top two are the most material.">
+                            <span class="tip-icon">?</span>
+                        </span>
+                    </div>
+                    <div class="drivers-grid" id="driversGrid"></div>
+                </div>
+
+                <!-- Price Metrics -->
+                <div class="price-grid">
+                    <div>
+                        <div class="metric-label">Current Price</div>
+                        <div class="metric-val">Rs <span id="uiPrice">—</span></div>
+                    </div>
+                    <div>
+                        <div class="metric-label">Day Change</div>
+                        <div class="metric-val" id="uiChangeBadge">—</div>
+                    </div>
+                    <div>
+                        <div class="metric-label">52-Week Range</div>
+                        <div class="metric-val" style="font-size:0.95rem;">
+                            <span style="color:var(--text-muted)">H</span> <span id="uiHigh">—</span>
+                            &nbsp;<span style="color:var(--text-muted)">L</span> <span id="uiLow">—</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Company Event -->
+                <div class="event-section">
+                    <div class="section-label" style="margin-bottom:0.75rem;">
+                        Company Events
+                        <span class="tip" data-tip="Recent disclosed or reported company activity used to generate the company signal layer of this analysis.">
+                            <span class="tip-icon">?</span>
+                        </span>
+                    </div>
+                    <div class="event-box">
+                        <span class="source-chip" id="uiSignalSource" style="display:none;"></span>
+                        <p class="event-title" id="uiSignalTitle" style="display:none;"></p>
+                        <p id="uiNoSignal" style="color:var(--text-muted);font-size:0.88rem;margin:0;">No material company events detected in the current window.</p>
+                        <div id="uiHeadlineSection" style="display:none;margin-top:1rem;">
+                            <a href="#" target="_blank" id="uiHeadlineLink" class="event-link">
+                                <strong id="uiHeadlineTitle" style="display:block;margin-bottom:0.35rem;font-size:0.9rem;"></strong>
+                                <div class="event-link-label">View Source →</div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Interpretation -->
+                <div class="ai-block" id="aiBlock">
+                    <div class="ai-header">
+                        <div class="section-label" style="margin:0;">AI Interpretation Layer</div>
+                        <span class="ai-badge" id="uiAILabel">—</span>
+                    </div>
+                    <div class="ai-body" id="uiAISummary">—</div>
+                </div>
+
+                <!-- Materiality -->
+                <div class="mat-block" id="matBlock">
+                    <div class="mat-header">
+                        <div class="section-label" style="margin:0;">
+                            Materiality Breakdown
+                            <span class="tip" data-tip="How important each company event is likely to be for investors. High-materiality items carry more weight in the final signal.">
+                                <span class="tip-icon">?</span>
+                            </span>
+                        </div>
+                        <span class="mat-score" id="uiCompanyWeighting"></span>
+                    </div>
+                    <div class="mat-list" id="matList"></div>
+                </div>
+
+            </div><!-- /stockCard -->
+        </div><!-- /left-col -->
+
+        <!-- RIGHT: Market Intelligence -->
+        <div class="right-col">
+
+            <!-- Watchlist Panel -->
+            <div class="card" id="watchlistPanel" style="display:none;margin-bottom:1.5rem;">
+                <div class="section-label" style="margin-bottom:0.75rem;">★ Watchlist</div>
+                <div id="watchlistItems">
+                    <div class="wl-empty">No stocks saved yet. Search and add stocks to track them here.</div>
+                </div>
+            </div>
+
+            <!-- Market Intelligence Card -->
+            <div class="card">
+                <div class="mood-header">
+                    <div class="mood-title">Financial Climate</div>
+                    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.2rem;">
+                        <span class="freshness" id="uiMarketFreshness" style="display:none;"></span>
+                        <span class="countdown" id="uiMarketCountdown"></span>
+                    </div>
+                </div>
+                <p class="mood-desc">Sentiment derived from Nepal financial news across market, banking, and economic sources.</p>
+
+                <!-- Two-Layer Signal -->
+                <div class="two-layer" id="uiMoodContainer" style="margin-top:0.5rem;">
+                    <div class="drift-badge" id="uiDriftBadge"></div>
+                    <div class="two-layer-inner">
+                        <div class="layer-row pulse-row">
+                            <div style="flex:1;min-width:0;">
+                                <div class="layer-key">
+                                    Market Pulse
+                                    <span class="tip" data-tip="Market Pulse reflects the short-term tone of Nepal market news and NEPSE-linked developments.">
+                                        <span class="tip-icon">?</span>
+                                    </span>
+                                </div>
+                                <div class="layer-val" id="uiMoodLabel">—</div>
+                            </div>
+                            <div class="score-col">
+                                <div class="layer-score" id="uiMoodScore">—</div>
+                                <div class="layer-score-label">Score</div>
+                            </div>
+                        </div>
+
+                        <div class="layer-row climate-row">
+                            <div style="flex:1;min-width:0;">
+                                <div class="layer-key">
+                                    Macro Climate
+                                    <span class="tip" data-tip="Macro Climate reflects the broader financial and economic backdrop, including banking, policy, and macroeconomic signals when enough coverage exists.">
+                                        <span class="tip-icon">?</span>
+                                    </span>
+                                </div>
+                                <div class="layer-val" id="uiMacroClimate">—</div>
+                            </div>
+                            <div class="coverage-chip" id="uiCoverageChip" style="display:none;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Why This Matters (Macro) -->
+                <div class="why-macro" id="uiMacroWhy"></div>
+
+                <!-- Delta -->
+                <div class="delta-block" id="uiDeltaBlock">
+                    <div class="delta-label">Since Last Update</div>
+                    <p class="delta-text" id="uiDeltaText"></p>
+                </div>
+
+                <!-- Headlines -->
+                <div class="headlines-section">
+                    <div class="hl-header">
+                        <div class="section-label" style="margin:0;">
+                            Analyzed Headlines
+                            <span style="color:var(--text-dim);font-weight:400;font-size:0.68rem;">&nbsp;(<span id="uiHeadlineCount">0</span> scored)</span>
+                        </div>
+                        <div class="hl-source-note" id="uiSourceNote"></div>
+                    </div>
+                    <div id="uiMarketHeadlines">
+                        <div class="hl-item">Loading financial news…</div>
+                    </div>
+                    <!-- Source change status: shown when article set is unchanged -->
+                    <div id="uiSourceChangeStatus" style="display:none;margin-top:0.6rem;font-size:0.72rem;color:var(--text-muted);font-style:italic;"></div>
+                </div>
+
+                <!-- History -->
+                <div class="history-section">
+                    <div class="section-label" style="margin-bottom:0.75rem;">Signal Timeline</div>
+                    <div class="history-timeline" id="uiHistoryTimeline">
+                        <div style="font-size:0.8rem;color:var(--text-muted);text-align:center;padding:0.75rem;">Loading history…</div>
+                    </div>
+                </div>
+
+            </div>
+        </div><!-- /right-col -->
+    </div><!-- /main-grid -->
+
+</div><!-- /page-wrap -->
+
+<!-- Global tooltip overlay: direct child of body — placed BEFORE the script tag
+     so document.getElementById('globalTip') succeeds when the IIFE runs -->
+<div id="globalTip"></div>
+
+<script>
+// ── CONSTANTS ─────────────────────────────────────────────────────────────
+const API_BASE = 'http://127.0.0.1:8000';
+const MARKET_REFRESH_MS  = 600_000; // 10 min — matches backend TTL; realistic for Nepal news cadence
+const STOCK_REFRESH_MS   = 300_000; // 5 min
+const WATCHLIST_KEY = 'datus_watchlist_v2';
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let activeMarketData = null;
+let activeTicker     = null;
+let activeStockData  = null;
+let marketIntervalId = null;
+let stockIntervalId  = null;
+let countdownId      = null;
+let nextMarketRefresh = null;
+let compareList = [];   // [{ticker, data}]
+let watchlist   = [];   // [{ticker, name, sentiment, confidence}]
+
+// ── BOOT ───────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    loadWatchlist();
+    fetchMarketContext(true);
+    marketIntervalId = setInterval(() => fetchMarketContext(false), MARKET_REFRESH_MS);
+    startCountdown();
+});
+
+// ── COLOURS ────────────────────────────────────────────────────────────────
+function sentimentColor(s) {
+    const t = (s || '').toLowerCase();
+    if (t.includes('mildly bullish'))  return 'var(--mild-bullish)';
+    if (t.includes('bullish'))         return 'var(--bullish)';
+    if (t.includes('mildly bearish'))  return 'var(--mild-bearish)';
+    if (t.includes('bearish'))         return 'var(--bearish)';
+    return 'var(--neutral)';
+}
+function confidenceColor(c) {
+    if (c === 'High')   return 'var(--bullish)';
+    if (c === 'Medium') return 'var(--mild-bearish)';
+    return 'var(--neutral)';
+}
+
+// ── TIME UTILS ────────────────────────────────────────────────────────────
+function timeAgo(d) {
+    const sec = Math.floor((Date.now() - d) / 1000);
+    if (sec < 60) return 'Updated just now';
+    return `Updated ${Math.floor(sec / 60)}m ago`;
+}
+
+function startCountdown() {
+    if (countdownId) clearInterval(countdownId);
+    nextMarketRefresh = Date.now() + MARKET_REFRESH_MS;
+    countdownId = setInterval(() => {
+        const rem = Math.max(0, Math.ceil((nextMarketRefresh - Date.now()) / 1000));
+        const m = Math.floor(rem / 60);
+        const s = rem % 60;
+        const el = document.getElementById('uiMarketCountdown');
+        if (el) el.textContent = rem > 0 ? `Next refresh ~${m}m ${s}s` : '';
+    }, 1000);
+}
+
+// ── SEARCH ────────────────────────────────────────────────────────────────
+const searchInput    = document.getElementById('tickerInput');
+const searchDropdown = document.getElementById('searchDropdown');
+let searchTimer;
+
+searchInput.addEventListener('input', e => {
+    const q = e.target.value.trim();
+    clearTimeout(searchTimer);
+    if (q.length < 2) { searchDropdown.style.display = 'none'; return; }
+    searchTimer = setTimeout(async () => {
+        try {
+            const r = await fetch(`${API_BASE}/tickers/search?q=${encodeURIComponent(q)}`);
+            if (!r.ok) return;
+            const data = await r.json();
+            searchDropdown.innerHTML = '';
+            if (!data.length) { searchDropdown.style.display = 'none'; return; }
+            data.forEach(item => {
+                const d = document.createElement('div');
+                d.className = 's-item';
+                d.innerHTML = `<strong>${item.symbol}</strong><span style="color:var(--text-muted);font-size:0.85rem;">${item.company_name}</span>`;
+                d.onclick = () => { searchTicker(item.symbol); searchDropdown.style.display = 'none'; };
+                searchDropdown.appendChild(d);
+            });
+            searchDropdown.style.display = 'block';
+        } catch {}
+    }, 280);
+});
+
+document.addEventListener('click', e => {
+    if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target))
+        searchDropdown.style.display = 'none';
+});
+
+document.getElementById('searchForm').addEventListener('submit', e => {
+    e.preventDefault();
+    searchDropdown.style.display = 'none';
+    const t = searchInput.value.trim();
+    if (t) searchTicker(t);
+});
+
+function searchTicker(ticker) {
+    searchInput.value = ticker;
+    activeTicker = ticker;
+
+    // Collapse hero text
+    const hero = document.getElementById('heroSection');
+    hero.querySelector('h2').style.display = 'none';
+    hero.querySelector('p').style.display = 'none';
+    hero.querySelector('.quick-tags').style.display = 'none';
+
+    if (stockIntervalId) clearInterval(stockIntervalId);
+    fetchStockData(ticker, true);
+    stockIntervalId = setInterval(() => {
+        if (activeTicker) fetchStockData(activeTicker, false);
+    }, STOCK_REFRESH_MS);
+}
+
+// ── MARKET FETCH ──────────────────────────────────────────────────────────
+async function fetchMarketContext(initial = false) {
+    // Reset countdown
+    nextMarketRefresh = Date.now() + MARKET_REFRESH_MS;
+
+    try {
+        const r = await fetch(`${API_BASE}/market-mood`);
+        if (!r.ok) return;
+        const d = await r.json();
+        activeMarketData = d;
+        renderMarketPanel(d, initial);
+    } catch (e) {
+        console.warn('Market mood fetch failed', e);
+    }
+
+    try {
+        const r = await fetch(`${API_BASE}/market-mood/history?limit=5`);
+        if (!r.ok) return;
+        renderHistory(await r.json());
+    } catch (e) {
+        console.warn('Market history fetch failed', e);
+    }
+}
+
+function renderMarketPanel(d, initial) {
+    // Freshness
+    const freshEl = document.getElementById('uiMarketFreshness');
+    freshEl.style.display = 'inline';
+    freshEl.textContent = timeAgo(new Date());
+
+    // Snapshot bar
+    const layer = d.macro_layer_status;
+    if (layer) {
+        const pulse = layer.market_pulse || '—';
+        const climate = layer.coverage_sufficient ? (layer.macro_climate || '—') : 'Low Coverage';
+        document.getElementById('snapPulse').textContent   = pulse;
+        document.getElementById('snapPulse').style.color   = sentimentColor(pulse);
+        document.getElementById('snapClimate').textContent = climate;
+        document.getElementById('snapClimate').style.color = layer.coverage_sufficient ? sentimentColor(climate) : 'var(--text-muted)';
+    }
+    const conf = d.macro_confidence || '—';
+    document.getElementById('snapConf').textContent  = conf;
+    document.getElementById('snapConf').style.color  = confidenceColor(conf);
+    document.getElementById('snapSummary').innerHTML =
+        d.delta_summary ? `<strong>Today:</strong> ${d.delta_summary}` : 'Analyzing market conditions…';
+
+    // Score fade
+    const scoreEl = document.getElementById('uiMoodScore');
+    const newScore = typeof d.score === 'number' ? d.score.toFixed(2) : '—';
+    if (scoreEl.textContent !== newScore && !initial) {
+        scoreEl.style.opacity = '0.2';
+        setTimeout(() => { scoreEl.textContent = newScore; scoreEl.style.opacity = '1'; }, 280);
+    } else {
+        scoreEl.textContent = newScore;
+    }
+
+    // Layer signals
+    if (layer) {
+        const pulseLabel = document.getElementById('uiMoodLabel');
+        pulseLabel.textContent = layer.market_pulse || '—';
+        pulseLabel.style.color = sentimentColor(layer.market_pulse);
+
+        const climateEl = document.getElementById('uiMacroClimate');
+        const coverageChip = document.getElementById('uiCoverageChip');
+
+        if (!layer.coverage_sufficient) {
+            climateEl.textContent = 'Low coverage';
+            climateEl.style.color = 'var(--text-muted)';
+            climateEl.style.opacity = '0.55';
+            coverageChip.style.display = 'inline-block';
+            coverageChip.textContent = `${layer.macro_article_count || 0} of 3 needed`;
+        } else {
+            climateEl.textContent = layer.macro_climate || '—';
+            climateEl.style.color = sentimentColor(layer.macro_climate);
+            climateEl.style.opacity = '1';
+            coverageChip.style.display = 'inline-block';
+            coverageChip.textContent = `${layer.macro_article_count} sources`;
+        }
+    } else {
+        document.getElementById('uiMoodLabel').textContent = d.macro_sentiment || '—';
+        document.getElementById('uiMoodLabel').style.color = sentimentColor(d.macro_sentiment);
+    }
+
+    // Drift badge
+    if (d.drift) {
+        const badge = document.getElementById('uiDriftBadge');
+        badge.style.display = 'inline-block';
+        const sign = d.drift.change > 0 ? '+' : '';
+        badge.textContent = `${d.drift.status} (${sign}${d.drift.change.toFixed(2)})`;
+        if (d.drift.status === 'Stable') {
+            badge.style.cssText += 'background:rgba(255,255,255,0.05);color:var(--text-muted);border:1px solid rgba(255,255,255,0.12);';
+        } else if (d.drift.status === 'Moderate') {
+            badge.style.cssText += 'background:rgba(245,158,11,0.15);color:var(--mild-bearish);border:1px solid var(--mild-bearish);';
+        } else {
+            badge.style.cssText += 'background:rgba(239,68,68,0.15);color:var(--bearish);border:1px solid var(--bearish);';
+        }
+        if (!initial && (d.drift.status === 'Moderate' || d.drift.status === 'Significant')) {
+            const c = document.getElementById('uiMoodContainer');
+            const col = d.drift.status === 'Moderate' ? 'var(--mild-bearish)' : 'var(--bearish)';
+            c.style.boxShadow = `0 0 28px ${col}55`;
+            setTimeout(() => { c.style.boxShadow = 'none'; }, 1600);
+        }
+    }
+
+    // Delta
+    if (d.delta_summary) {
+        const db = document.getElementById('uiDeltaBlock');
+        db.style.display = 'block';
+        document.getElementById('uiDeltaText').textContent = d.delta_summary;
+    }
+
+    // Why This Matters (macro)
+    const whyMacro = document.getElementById('uiMacroWhy');
+    if (d.drivers && d.drivers.length > 0 && layer) {
+        const pulse = layer.market_pulse || 'Neutral';
+        const climate = layer.coverage_sufficient ? (layer.macro_climate || 'Neutral') : null;
+        const driver1 = d.drivers[0];
+        const driver2 = d.drivers[1];
+        let why = '';
+        if (!layer.coverage_sufficient) {
+            why = `Market tone is ${pulse.toLowerCase()}, driven primarily by NEPSE activity. Broader economic confirmation is limited today.`;
+        } else {
+            const driverText = driver2 ? `${driver1} and ${driver2}` : driver1;
+            why = `Financial climate appears ${(climate || pulse).toLowerCase()}, with ${driverText} among the key forces shaping current conditions.`;
+        }
+        whyMacro.textContent = why;
+        whyMacro.style.display = 'block';
+    } else {
+        whyMacro.style.display = 'none';
+    }
+
+    // Source note + source change status
+    const sourceNote = document.getElementById('uiSourceNote');
+    if (d.source_breakdown) {
+        const parts = Object.entries(d.source_breakdown)
+            .filter(([,v]) => v > 0)
+            .map(([k,v]) => `${k} (${v})`);
+        sourceNote.textContent = parts.length ? parts.join(' · ') : '';
+    }
+    const statusEl = document.getElementById('uiSourceChangeStatus');
+    if (d.source_change_status) {
+        const isNoChange = d.source_change_status.includes('No new');
+        statusEl.textContent = d.source_change_status;
+        statusEl.style.display = 'block';
+        statusEl.style.color = isNoChange ? 'var(--text-muted)' : 'var(--mild-bullish)';
+    } else {
+        statusEl.style.display = 'none';
+    }
+
+    // Headlines
+    const hlContainer = document.getElementById('uiMarketHeadlines');
+    hlContainer.innerHTML = '';
+    const hl = d.latest_headlines || d.analyzed_headlines || [];
+    if (hl.length > 0) {
+        hl.slice(0, 3).forEach(h => {
+            const el = document.createElement('div');
+            el.className = 'hl-item';
+            el.textContent = h;
+            hlContainer.appendChild(el);
+        });
+    } else {
+        hlContainer.innerHTML = '<div class="hl-item" style="color:var(--text-muted);">No recent financial headlines available.</div>';
+    }
+
+    document.getElementById('uiHeadlineCount').textContent = d.headline_count || d.analyzed_article_count || 0;
+}
+
+function getTieredLabel(score) {
+    if (typeof score !== 'number') return '—';
+    if (score > 0.25)  return 'Bullish';
+    if (score > 0.10)  return 'Mildly Bullish';
+    if (score >= -0.10) return 'Neutral';
+    if (score >= -0.25) return 'Mildly Bearish';
+    return 'Bearish';
+}
+
+function renderHistory(data) {
+    const container = document.getElementById('uiHistoryTimeline');
+    container.innerHTML = '';
+    if (!data || !data.length) {
+        container.innerHTML = '<div style="font-size:0.8rem;color:var(--text-muted);text-align:center;padding:0.75rem;">No history available yet.</div>';
+        return;
+    }
+
+    // Deduplicate: skip consecutive rows with the same label and score (within 0.01)
+    const deduped = [];
+    let skippedCount = 0;
+    data.forEach(h => {
+        const label = getTieredLabel(h.average_score);
+        const last  = deduped[deduped.length - 1];
+        if (last && last.label === label && Math.abs(last.average_score - h.average_score) < 0.01) {
+            skippedCount++;
+            return;
+        }
+        deduped.push({ ...h, label });
+    });
+
+    // If all rows were deduplicated down to one, show a calm note
+    if (deduped.length === 1 && skippedCount > 0) {
+        const h   = deduped[0];
+        const d   = new Date(h.created_at);
+        const row = document.createElement('div');
+        row.className = 'ht-row';
+        row.innerHTML = `
+            <span class="ht-time">Most recent</span>
+            <span class="ht-val" style="color:${sentimentColor(h.label)}">${h.label} <span style="color:var(--text-muted);font-weight:400;font-size:0.75rem;">(${h.average_score.toFixed(2)})</span></span>
+        `;
+        container.appendChild(row);
+        // Calm informational note
+        const note = document.createElement('div');
+        note.style.cssText = 'font-size:0.75rem;color:var(--text-muted);font-style:italic;padding:0.5rem 0.875rem;';
+        note.textContent = 'No material change in market signal since tracking began.';
+        container.appendChild(note);
+        return;
+    }
+
+    deduped.forEach((h, i) => {
+        const d = new Date(h.created_at);
+        const timeStr = i === 0 ? 'Most recent' : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const row = document.createElement('div');
+        row.className = 'ht-row';
+        row.innerHTML = `
+            <span class="ht-time">${timeStr}</span>
+            <span class="ht-val" style="color:${sentimentColor(h.label)}">${h.label} <span style="color:var(--text-muted);font-weight:400;font-size:0.75rem;">(${h.average_score.toFixed(2)})</span></span>
+        `;
+        container.appendChild(row);
+    });
+}
+
+// ── STOCK FETCH ───────────────────────────────────────────────────────────
+async function fetchStockData(ticker, showLoader = true) {
+    const emptyState  = document.getElementById('emptyState');
+    const skeleton    = document.getElementById('skeletonLoader');
+    const stockCard   = document.getElementById('stockCard');
+    const errorMsg    = document.getElementById('errorMsg');
+
+    if (showLoader) document.getElementById('uiStockFreshness').style.display = 'none';
+
+    if (showLoader) {
+        emptyState.style.display = 'none';
+        stockCard.style.display  = 'none';
+        skeleton.style.display   = 'flex';
+        errorMsg.style.display   = 'none';
+    }
+
+    try {
+        const r = await fetch(`${API_BASE}/stock/${ticker}`);
+        if (!r.ok) {
+            const err = await r.json();
+            throw new Error(err.detail || 'Unable to retrieve stock data.');
+        }
+        const data = await r.json();
+        activeStockData = data;
+
+        if (showLoader) await new Promise(res => setTimeout(res, 750));
+        if (showLoader) { skeleton.style.display = 'none'; stockCard.style.display = 'flex'; }
+
+        renderStockCard(data, ticker);
+    } catch (err) {
+        if (showLoader) skeleton.style.display = 'none';
+        errorMsg.textContent = err.message;
+        errorMsg.style.display = 'block';
+    }
+}
+
+function renderStockCard(data, ticker) {
+    // Header
+    document.getElementById('uiTicker').textContent = data.ticker || ticker;
+    document.getElementById('uiCompanyName').textContent = data.company_name || '—';
+    document.getElementById('uiSector').textContent = data.sector || '—';
+
+    // Freshness
+    const fresh = document.getElementById('uiStockFreshness');
+    fresh.style.display = 'inline';
+    fresh.textContent = timeAgo(new Date());
+
+    // Watchlist state
+    updateWatchlistButton(ticker);
+
+    // ----- INSIGHT -----
+    const insight = data.insight;
+    if (insight) {
+        // Conviction
+        const sent = insight.stock_sentiment || '—';
+        const sentEl = document.getElementById('uiSentiment');
+        sentEl.textContent = sent;
+        sentEl.style.color = sentimentColor(sent);
+
+        const conv = document.getElementById('convictionBlock');
+        conv.style.borderLeftColor = sentimentColor(sent);
+
+        const conf = insight.confidence || '—';
+        document.getElementById('uiConfidence').textContent = conf;
+        document.getElementById('uiConfidence').style.color = confidenceColor(conf);
+
+        const ctxEl = document.getElementById('uiConfidenceCtx');
+        if (insight.confidence_context) {
+            ctxEl.textContent = insight.confidence_context;
+            ctxEl.style.display = 'block';
+        } else {
+            ctxEl.textContent = buildConfidenceNote(conf, sent);
+            ctxEl.style.display = 'block';
+        }
+
+        // Why this matters
+        const whyEl = document.getElementById('uiWhyMatters');
+        const whyText = buildWhyThisMatters(insight, data);
+        if (whyText) {
+            document.getElementById('uiWhyText').innerHTML = whyText;
+            whyEl.style.display = 'flex';
+        } else {
+            whyEl.style.display = 'none';
+        }
+
+        // Signal Alignment
+        const alignBlock = document.getElementById('alignmentBlock');
+        if (insight.signal_alignment) {
+            alignBlock.style.display = 'block';
+            const status = insight.signal_alignment.status;
+            const badge = document.getElementById('alignBadge');
+            badge.textContent = status;
+            document.getElementById('alignNote').textContent = insight.signal_alignment.note || '';
+            document.getElementById('alignWarningIcon').style.display = status === 'Contradictory' ? 'inline' : 'none';
+
+            alignBlock.classList.toggle('contradictory', status === 'Contradictory');
+            if (status === 'Aligned') {
+                badge.style.cssText = 'background:var(--bullish);color:#000;';
+                alignBlock.style.borderLeftColor = 'var(--bullish)';
+            } else if (status === 'Contradictory') {
+                badge.style.cssText = 'background:var(--bearish);color:#fff;';
+                alignBlock.style.borderLeftColor = 'var(--bearish)';
+            } else {
+                badge.style.cssText = 'background:var(--mild-bearish);color:#000;';
+                alignBlock.style.borderLeftColor = 'var(--mild-bearish)';
+            }
+        } else {
+            alignBlock.style.display = 'none';
+        }
+
+        // Reasoning
+        renderReasoning(insight);
+
+        // Drivers
+        renderDrivers(insight.drivers || [], sent);
+
+    } else {
+        document.getElementById('uiSentiment').textContent = '—';
+        document.getElementById('uiConfidence').textContent = '—';
+        document.getElementById('uiConfidenceCtx').textContent = '';
+        document.getElementById('alignmentBlock').style.display = 'none';
+        document.getElementById('uiWhyMatters').style.display = 'none';
+        document.getElementById('reasoningBlock').innerHTML = '';
+        document.getElementById('driversGrid').innerHTML = '';
+    }
+
+    // Price
+    document.getElementById('uiPrice').textContent = data.current_price || '—';
+    document.getElementById('uiHigh').textContent  = data.fifty_two_week_high || '—';
+    document.getElementById('uiLow').textContent   = data.fifty_two_week_low || '—';
+    const chg = data.price_change;
+    const pct = data.price_change_percent;
+    if (chg || pct) {
+        const val = parseFloat(chg || '0');
+        const cls = val > 0 ? 'price-up' : val < 0 ? 'price-dn' : '';
+        document.getElementById('uiChangeBadge').innerHTML =
+            `<span class="${cls}">${chg || '—'} (${pct || '—'})</span>`;
+    } else {
+        document.getElementById('uiChangeBadge').textContent = '—';
+    }
+
+    // Company signal / event
+    const sigTitle  = document.getElementById('uiSignalTitle');
+    const sigSource = document.getElementById('uiSignalSource');
+    const sigNone   = document.getElementById('uiNoSignal');
+    if (data.company_signal && data.company_signal.title) {
+        sigTitle.textContent = data.company_signal.title;
+        sigTitle.style.display = 'block';
+        sigSource.textContent = 'Company Event · ' + data.company_signal.source;
+        sigSource.style.display = 'inline-block';
+        sigNone.style.display = 'none';
+    } else {
+        sigTitle.style.display = 'none';
+        sigSource.style.display = 'none';
+        sigNone.style.display = 'block';
+    }
+
+    const hlSection = document.getElementById('uiHeadlineSection');
+    const hlLink    = document.getElementById('uiHeadlineLink');
+    const hlTitle   = document.getElementById('uiHeadlineTitle');
+    if (data.headline && data.headline.title && (!data.company_signal || data.company_signal.title !== data.headline.title)) {
+        hlSection.style.display = 'block';
+        hlTitle.textContent = data.headline.title;
+        hlLink.href = data.headline.url || '#';
+        hlLink.style.pointerEvents = data.headline.url ? 'auto' : 'none';
+    } else {
+        hlSection.style.display = 'none';
+    }
+
+    // AI Signal
+    const aiBlock = document.getElementById('aiBlock');
+    if (insight && insight.ai_company_signal) {
+        aiBlock.style.display = 'block';
+        const aiLabel = document.getElementById('uiAILabel');
+        aiLabel.textContent = insight.ai_company_signal.label;
+        aiLabel.style.background = sentimentColor(insight.ai_company_signal.label);
+        aiLabel.style.color = '#111';
+        document.getElementById('uiAISummary').textContent = `"${insight.ai_company_signal.impact_summary}"`;
+    } else {
+        aiBlock.style.display = 'none';
+    }
+
+    // Materiality
+    const matBlock = document.getElementById('matBlock');
+    if (insight && insight.company_analysis && insight.company_analysis.items && insight.company_analysis.items.length > 0) {
+        matBlock.style.display = 'block';
+        document.getElementById('uiCompanyWeighting').textContent = `Score: ${insight.company_analysis.weighted_company_score}`;
+        const matList = document.getElementById('matList');
+        matList.innerHTML = '';
+        insight.company_analysis.items.forEach(item => {
+            const matColor = item.materiality === 'High' ? 'var(--bearish)' : item.materiality === 'Medium' ? 'var(--accent)' : 'var(--text-muted)';
+            const sentColor = sentimentColor(item.sentiment);
+            const row = document.createElement('div');
+            row.className = 'mat-item';
+            row.innerHTML = `
+                <div class="mat-text">${item.text.substring(0, 80)}${item.text.length > 80 ? '…' : ''}</div>
+                <div class="mat-badges">
+                    <span class="mat-badge" style="color:${matColor};border-color:${matColor};">${item.materiality}</span>
+                    <span style="font-size:0.82rem;font-weight:700;color:${sentColor};">${item.sentiment}</span>
+                </div>
+            `;
+            matList.appendChild(row);
+        });
+    } else {
+        matBlock.style.display = 'none';
+    }
+
+    // Update watchlist entry if already saved
+    updateWatchlistEntry(ticker, data);
+}
+
+function renderReasoning(insight) {
+    const block = document.getElementById('reasoningBlock');
+    const raw = insight.reasoning || '';
+    if (!raw) { block.innerHTML = ''; return; }
+
+    const sent = insight.stock_sentiment || '';
+    const isBull = sent.toLowerCase().includes('bullish');
+    const isBear = sent.toLowerCase().includes('bearish');
+
+    const splitMatch = raw.match(/^(.*?)(?:,?\s*(although|while|however|but)\s+(.*))?$/i);
+    let main = raw, secondary = '';
+    if (splitMatch && splitMatch[3]) { main = splitMatch[1]; secondary = splitMatch[3]; }
+
+    let html = '';
+    if (isBull) {
+        html += buildList('Bullish Case', 'var(--bullish)', [main]);
+        if (secondary) html += buildList('Risk Factors', 'var(--bearish)', [secondary]);
+    } else if (isBear) {
+        html += buildList('Bearish Case', 'var(--bearish)', [main]);
+        if (secondary) html += buildList('Supporting Factors', 'var(--bullish)', [secondary]);
+    } else {
+        html += buildList('Analysis', 'var(--neutral)', [main]);
+    }
+    block.innerHTML = html;
+}
+
+function buildList(heading, color, items) {
+    const lis = items.map(t => `<li>${cap(t)}</li>`).join('');
+    return `<strong class="reason-heading" style="color:${color};">${heading}</strong><ul class="reason-list">${lis}</ul>`;
+}
+
+function renderDrivers(drivers, sentiment) {
+    const grid = document.getElementById('driversGrid');
+    const label = document.getElementById('driverSectionLabel');
+    grid.innerHTML = '';
+
+    const sent = (sentiment || '').toLowerCase();
+    if (sent.includes('bullish'))      { label.textContent = 'Bullish Drivers'; label.style.color = 'var(--bullish)'; }
+    else if (sent.includes('bearish')) { label.textContent = 'Bearish Drivers'; label.style.color = 'var(--bearish)'; }
+    else                               { label.textContent = 'Key Drivers';     label.style.color = 'var(--text-muted)'; }
+
+    const driverColor = sent.includes('bullish') ? 'var(--bullish)'
+                      : sent.includes('bearish') ? 'var(--bearish)'
+                      : 'var(--neutral)';
+
+    (drivers || []).forEach((d, i) => {
+        const pill = document.createElement('div');
+        pill.className = 'driver-pill ' + (i < 2 ? 'primary' : 'secondary');
+        const dot = document.createElement('div');
+        dot.className = 'driver-dot';
+        dot.style.background = i < 2 ? driverColor : 'var(--text-dim)';
+        pill.appendChild(dot);
+        pill.appendChild(document.createTextNode(d));
+        grid.appendChild(pill);
+    });
+
+    if (!drivers || !drivers.length) {
+        grid.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;">No specific drivers identified.</div>';
+    }
+}
+
+// ── WHY THIS MATTERS GENERATOR ───────────────────────────────────────────
+function buildWhyThisMatters(insight, data) {
+    const sent      = (insight.stock_sentiment || '').toLowerCase();
+    const conf      = (insight.confidence || '').toLowerCase();
+    const alignment = insight.signal_alignment ? insight.signal_alignment.status : null;
+    const drivers   = insight.drivers || [];
+    const driver1   = drivers[0];
+
+    if (alignment === 'Contradictory') {
+        return `<strong>Note:</strong> The stock has a ${insight.stock_sentiment} reading, but market conditions and company signals are not in agreement. Treat this signal with caution.`;
+    }
+    if (alignment === 'Aligned' && conf === 'high') {
+        return `Multiple independent signal layers — company events, market mood, and AI interpretation — all point in the same direction. This is a high-conviction read.`;
+    }
+    if (sent.includes('bullish') && driver1) {
+        return `The stock is showing positive signals, supported by <strong>${driver1}</strong>. ${conf === 'low' ? 'However, broader confirmation is still limited.' : ''}`;
+    }
+    if (sent.includes('bearish') && driver1) {
+        return `Caution signals are present, driven by <strong>${driver1}</strong>. Market and company data are broadly aligned on the downside.`;
+    }
+    if (conf === 'low') {
+        return `The signal is currently limited in strength. Company activity is present, but broader market confirmation is mixed or absent.`;
+    }
+    return null;
+}
+
+function buildConfidenceNote(conf, sent) {
+    if (conf === 'High')   return 'Multiple high-impact data layers are in agreement, supporting a reliable signal.';
+    if (conf === 'Medium') return `Company signals are ${(sent || '').toLowerCase().includes('neutral') ? 'mixed' : 'present'}, but broader market confirmation is partial.`;
+    return 'Limited signal coverage today. Use this reading as one input, not a standalone conclusion.';
+}
+
+// ── WATCHLIST ─────────────────────────────────────────────────────────────
+function loadWatchlist() {
+    try { watchlist = JSON.parse(localStorage.getItem(WATCHLIST_KEY) || '[]'); } catch { watchlist = []; }
+    renderWatchlist(); updateWlCount();
+}
+function saveWatchlist() {
+    localStorage.setItem(WATCHLIST_KEY, JSON.stringify(watchlist));
+    renderWatchlist(); updateWlCount();
+}
+function updateWlCount() {
+    document.getElementById('wlCount').textContent = watchlist.length;
+}
+function updateWatchlistButton(ticker) {
+    const btn = document.getElementById('watchlistBtn');
+    const icon = document.getElementById('wlBtnIcon');
+    const lbl  = document.getElementById('wlBtnLabel');
+    const saved = watchlist.some(w => w.ticker === ticker);
+    btn.classList.toggle('saved', saved);
+    icon.textContent = saved ? '★' : '☆';
+    lbl.textContent  = saved ? 'Saved' : 'Add to Watchlist';
+}
+function toggleWatchlistEntry() {
+    if (!activeTicker) return;
+    const idx = watchlist.findIndex(w => w.ticker === activeTicker);
+    if (idx >= 0) {
+        watchlist.splice(idx, 1);
+    } else {
+        const d = activeStockData;
+        watchlist.push({
+            ticker: activeTicker,
+            name: d ? (d.company_name || '') : '',
+            sentiment: d && d.insight ? d.insight.stock_sentiment : '—',
+            confidence: d && d.insight ? d.insight.confidence : '—',
+        });
+    }
+    saveWatchlist();
+    updateWatchlistButton(activeTicker);
+}
+function updateWatchlistEntry(ticker, data) {
+    const entry = watchlist.find(w => w.ticker === ticker);
+    if (!entry) return;
+    if (data && data.insight) {
+        entry.sentiment  = data.insight.stock_sentiment || entry.sentiment;
+        entry.confidence = data.insight.confidence || entry.confidence;
+        entry.name       = data.company_name || entry.name;
+    }
+    saveWatchlist();
+}
+function toggleWatchlistPanel() {
+    const panel = document.getElementById('watchlistPanel');
+    const btn   = document.getElementById('btnWatchlist');
+    const shown = panel.style.display !== 'none';
+    panel.style.display = shown ? 'none' : 'block';
+    btn.classList.toggle('active', !shown);
+}
+function renderWatchlist() {
+    const container = document.getElementById('watchlistItems');
+    if (!watchlist.length) {
+        container.innerHTML = '<div class="wl-empty">No stocks saved yet. Search for a stock and click "Add to Watchlist".</div>';
+        return;
+    }
+    container.innerHTML = '';
+    watchlist.forEach(w => {
+        const row = document.createElement('div');
+        row.className = 'wl-item';
+        row.innerHTML = `
+            <div style="flex:1;" onclick="searchTicker('${w.ticker}')">
+                <div class="wl-ticker">${w.ticker}</div>
+                <div class="wl-name">${w.name || ''}</div>
+            </div>
+            <span class="wl-sentiment" style="color:${sentimentColor(w.sentiment)};margin-right:0.75rem;">${w.sentiment}</span>
+            <span class="wl-remove" onclick="removeFromWatchlist('${w.ticker}')">✕</span>
+        `;
+        container.appendChild(row);
+    });
+}
+function removeFromWatchlist(ticker) {
+    watchlist = watchlist.filter(w => w.ticker !== ticker);
+    saveWatchlist();
+    if (activeTicker === ticker) updateWatchlistButton(ticker);
+}
+
+// ── COMPARE MODE ───────────────────────────────────────────────────────────
+function toggleCompareMode() {
+    const panel = document.getElementById('comparePanel');
+    const btn   = document.getElementById('btnCompare');
+    const shown = panel.style.display !== 'none';
+    panel.style.display = shown ? 'none' : 'block';
+    btn.classList.toggle('active', !shown);
+}
+function addCurrentToCompare() {
+    if (!activeTicker) return;
+    if (compareList.find(c => c.ticker === activeTicker)) return;
+    if (compareList.length >= 4) { alert('Compare supports up to 4 stocks.'); return; }
+
+    const data = activeStockData;
+    compareList.push({ ticker: activeTicker, data });
+    renderCompareGrid();
+    document.getElementById('comparePanel').style.display = 'block';
+    document.getElementById('btnCompare').classList.add('active');
+    const countEl = document.getElementById('cmpCount');
+    countEl.style.display = 'inline';
+    countEl.textContent = compareList.length;
+}
+function removeFromCompare(ticker) {
+    compareList = compareList.filter(c => c.ticker !== ticker);
+    renderCompareGrid();
+    const countEl = document.getElementById('cmpCount');
+    countEl.textContent = compareList.length;
+    if (!compareList.length) { countEl.style.display = 'none'; }
+}
+function clearCompare() {
+    compareList = [];
+    renderCompareGrid();
+    const countEl = document.getElementById('cmpCount');
+    countEl.style.display = 'none';
+    document.getElementById('comparePanel').style.display = 'none';
+    document.getElementById('btnCompare').classList.remove('active');
+}
+function renderCompareGrid() {
+    const grid = document.getElementById('compareGrid');
+    grid.innerHTML = '';
+    if (!compareList.length) {
+        grid.innerHTML = '<div style="font-size:0.82rem;color:var(--text-muted);text-align:center;padding:2rem;grid-column:1/-1;">Search and add stocks to compare them side-by-side.</div>';
+        return;
+    }
+    compareList.forEach(entry => {
+        const d = entry.data;
+        const insight = d && d.insight;
+        const sent = insight ? insight.stock_sentiment : '—';
+        const conf = insight ? insight.confidence : '—';
+        const align = insight && insight.signal_alignment ? insight.signal_alignment.status : '—';
+        const topDriver = insight && insight.drivers && insight.drivers.length ? insight.drivers[0] : '—';
+
+        const card = document.createElement('div');
+        card.className = 'compare-card';
+        card.innerHTML = `
+            <span class="cmp-remove" onclick="removeFromCompare('${entry.ticker}')">✕</span>
+            <div class="cmp-ticker">${entry.ticker}</div>
+            <div class="cmp-name">${d ? (d.company_name || '') : ''}</div>
+            <div class="cmp-row"><span class="cmp-key">Sentiment</span><span class="cmp-val" style="color:${sentimentColor(sent)}">${sent}</span></div>
+            <div class="cmp-row"><span class="cmp-key">Confidence</span><span class="cmp-val" style="color:${confidenceColor(conf)}">${conf}</span></div>
+            <div class="cmp-row"><span class="cmp-key">Alignment</span><span class="cmp-val">${align}</span></div>
+            <div class="cmp-driver">↳ ${topDriver}</div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────
+function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+
+// ── TOOLTIP ENGINE ────────────────────────────────────────────────────────
+// Uses position:fixed + getBoundingClientRect to defeat overflow:hidden on any ancestor.
+// Supports hover (desktop) and click-toggle (mobile/touch).
+(function initTooltips() {
+    const TOOLTIP_W = 230;
+    const OFFSET    = 10;
+
+    // Single shared overlay — get from DOM or create if somehow missing
+    // (must exist BEFORE this script tag in HTML to avoid null reference crash)
+    const popup = document.getElementById('globalTip') || (() => {
+        const el = document.createElement('div');
+        el.id = 'globalTip';
+        document.body.appendChild(el);
+        return el;
+    })();
+    let activeTip = null;
+
+    function position(iconEl) {
+        const rect = iconEl.getBoundingClientRect();
+        const vw   = window.innerWidth;
+
+        // Make popup temporarily visible (display:block) so offsetHeight is real
+        popup.style.display = 'block';
+        const bh = popup.offsetHeight || 90;
+
+        // Prefer above; flip below if it would go behind the navbar (top 64 px)
+        let top      = rect.top - bh - OFFSET;
+        let arrowUp  = false;
+        if (top < 64) {
+            top     = rect.bottom + OFFSET;
+            arrowUp = true;
+        }
+
+        // Centre on icon, clamp horizontally
+        let left = rect.left + rect.width / 2 - TOOLTIP_W / 2;
+        if (left + TOOLTIP_W > vw - 8) left = vw - TOOLTIP_W - 8;
+        if (left < 8) left = 8;
+
+        // Arrow position relative to popup left edge
+        const arrowLeft = (rect.left + rect.width / 2) - left;
+        popup.style.setProperty('--arrow-left', arrowLeft + 'px');
+
+        popup.style.top  = top  + 'px';
+        popup.style.left = left + 'px';
+        popup.classList.toggle('arrow-up',   arrowUp);
+        popup.classList.toggle('arrow-down', !arrowUp);
+    }
+
+    function show(tipEl) {
+        const text = tipEl.dataset.tip;
+        if (!text) return;
+        popup.textContent = text;
+        position(tipEl);
+        popup.classList.add('tip-visible');
+        tipEl.classList.add('tip-open');
+        activeTip = tipEl;
+    }
+
+    function hide(tipEl) {
+        popup.classList.remove('tip-visible');
+        popup.style.display = '';
+        if (tipEl) tipEl.classList.remove('tip-open');
+        activeTip = null;
+    }
+
+    function hideAll() {
+        document.querySelectorAll('.tip.tip-open').forEach(t => t.classList.remove('tip-open'));
+        hide(null);
+    }
+
+    // ── Hover (desktop) ──────────────────────────────────────────────────
+    document.addEventListener('mouseover', e => {
+        const tip = e.target.closest('.tip[data-tip]');
+        if (!tip) return;
+        show(tip);
+    });
+    document.addEventListener('mouseout', e => {
+        const tip = e.target.closest('.tip[data-tip]');
+        if (tip && !tip.contains(e.relatedTarget)) hide(tip);
+    });
+
+    // ── Click / tap (mobile) ─────────────────────────────────────────────
+    document.addEventListener('click', e => {
+        const tip = e.target.closest('.tip[data-tip]');
+        if (tip) {
+            e.stopPropagation();
+            if (tip.classList.contains('tip-open')) { hide(tip); }
+            else { hideAll(); show(tip); }
+            return;
+        }
+        hideAll();
+    });
+
+    // ── Reposition on scroll / resize ────────────────────────────────────
+    function reposition() {
+        if (activeTip && popup.classList.contains('tip-visible')) position(activeTip);
+    }
+    window.addEventListener('scroll', reposition, { passive: true });
+    window.addEventListener('resize', reposition, { passive: true });
+})();
+</script>
+</body>
+</html>
