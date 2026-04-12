@@ -6,7 +6,7 @@ A small FastAPI backend for fetching market news sentiment and stock statistics 
 - **Python**
 - **FastAPI**
 - **SQLite & SQLAlchemy**: For basic storage structuring.
-- **Requests & BeautifulSoup4**: For ShareSansar web scraping.
+- **Requests & BeautifulSoup4**: For news scraping.
 - **TextBlob**: For sentiment analysis.
 - **Uvicorn**: ASGI web server.
 - **Playwright**: Included as an available dependency for fallback dynamic setups.
