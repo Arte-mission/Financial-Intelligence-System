@@ -5,7 +5,7 @@ from typing import List, Dict, Any
 import logging
 import time
 
-from app.schemas import StockResponse, CompanyResponse
+from app.schemas import StockResponse, CompanyResponse, TechnicalIndicators
 from app.models import Company
 from app.services.sharesansar_service import get_company_data
 from app.services.ticker_service import get_company_by_ticker, get_all_companies, search_companies
@@ -215,9 +215,106 @@ def get_stock_data(ticker: str, db: Session = Depends(get_db)):
     else:
         drivers.append("Company signal: None recent")
         
-    # 3. Price Position Score (0 to 1 mapping mapped to range -0.5 to 0.5)
-    price_position_label = "Mid Range"
-    price_score = 0.0
+    # 4. Moving Average Technical Score
+    # ── MA Signal Logic ────────────────────────────────────────────────────
+    # Three layers, each capped at ±1.0:
+    #   Short-term : price vs MA5 / MA20        (weight 0.40)
+    #   Cross      : MA5 vs MA20 (golden/death) (weight 0.35)
+    #   Long-term  : price vs MA180             (weight 0.25)
+    # Final ma_score in [-1, 1] — contributes ma_weight=0.15 to final score.
+    ma_score      = 0.0
+    ma_signal     = "Neutral"
+    ma_note       = None
+    ma_layers_hit = 0
+    technical_indicators = None
+
+    try:
+        cp_str   = data.get("current_price")
+        ma5_str  = data.get("ma5")
+        ma20_str = data.get("ma20")
+        ma180_str= data.get("ma180")
+
+        cp    = float(cp_str.replace(",", ""))   if cp_str   else None
+        ma5   = float(ma5_str.replace(",", ""))  if ma5_str  else None
+        ma20  = float(ma20_str.replace(",", "")) if ma20_str else None
+        ma180 = float(ma180_str.replace(",", ""))if ma180_str else None
+
+        layer_score = 0.0
+
+        # Short-term: price vs MA5 and MA20
+        if cp and ma5 and ma20:
+            ma_layers_hit += 1
+            above5  = cp > ma5
+            above20 = cp > ma20
+            if above5 and above20:
+                layer_score += 0.40 * 1.0    # price above both → bullish
+            elif above5 and not above20:
+                layer_score += 0.40 * 0.2    # only above MA5 → mildly bullish
+            elif not above5 and above20:
+                layer_score += 0.40 * -0.2   # only below MA5 → mildly bearish
+            else:
+                layer_score += 0.40 * -1.0   # below both → bearish
+
+        # Cross signal: MA5 vs MA20
+        if ma5 and ma20:
+            ma_layers_hit += 1
+            if ma5 > ma20 * 1.01:            # golden cross (1% buffer to avoid noise)
+                layer_score += 0.35 * 1.0
+            elif ma5 < ma20 * 0.99:          # death cross
+                layer_score += 0.35 * -1.0
+            # else: MAs converging → no contribution
+
+        # Long-term: price vs MA180
+        if cp and ma180:
+            ma_layers_hit += 1
+            if cp > ma180 * 1.05:            # >5% above 180d MA → bullish trend
+                layer_score += 0.25 * 1.0
+            elif cp > ma180:
+                layer_score += 0.25 * 0.4    # slightly above
+            elif cp < ma180 * 0.95:          # >5% below → bearish trend
+                layer_score += 0.25 * -1.0
+            else:
+                layer_score += 0.25 * -0.4   # slightly below
+
+        if ma_layers_hit > 0:
+            ma_score = max(-1.0, min(1.0, layer_score))   # clamp
+
+            # Label
+            if ma_score >= 0.40:
+                ma_signal = "Bullish"
+            elif ma_score >= 0.15:
+                ma_signal = "Mildly Bullish"
+            elif ma_score <= -0.40:
+                ma_signal = "Bearish"
+            elif ma_score <= -0.15:
+                ma_signal = "Mildly Bearish"
+            else:
+                ma_signal = "Neutral"
+
+            # Human-readable note
+            parts = []
+            if cp and ma5:   parts.append(f"Price {'above' if cp > ma5 else 'below'} MA5")
+            if cp and ma20:  parts.append(f"{'above' if cp > ma20 else 'below'} MA20")
+            if ma5 and ma20: parts.append(f"MA5 {'>' if ma5 > ma20 else '<'} MA20")
+            if cp and ma180: parts.append(f"price {'above' if cp > ma180 else 'below'} MA180")
+            ma_note = "; ".join(parts) if parts else None
+
+            drivers.append(f"MA Signal: {ma_signal} ({ma_note or 'partial data'})")
+            logger.info(f"MA score for {ticker_upper}: {ma_score:.3f} ({ma_signal})")
+
+        technical_indicators = TechnicalIndicators(
+            ma5    = ma5_str,
+            ma20   = ma20_str,
+            ma180  = ma180_str,
+            ma_signal = ma_signal,
+            ma_note   = ma_note,
+            ma_score  = round(ma_score, 3)
+        )
+
+    except Exception as ma_err:
+        logger.warning(f"MA scoring failed for {ticker_upper}: {ma_err}")
+        ma_score = 0.0
+
     try:
         if data.get("current_price") and data.get("fifty_two_week_high") and data.get("fifty_two_week_low"):
             cp = float(data["current_price"].replace(',', ''))
@@ -241,7 +338,31 @@ def get_stock_data(ticker: str, db: Session = Depends(get_db)):
     except (TypeError, ValueError):
         drivers.append("Price: Unknown range")
 
-    # 4. AI Company Signal — gated behind AI_SIGNAL_CACHE to avoid redundant Gemini calls
+    # 5. Price Position Score (0 to 1 mapped to -0.5 to 0.5)
+    price_position_label = "Mid Range"
+    price_score = 0.0
+    try:
+        if data.get("current_price") and data.get("fifty_two_week_high") and data.get("fifty_two_week_low"):
+            cp = float(data["current_price"].replace(',', ''))
+            high = float(data["fifty_two_week_high"].replace(',', ''))
+            low = float(data["fifty_two_week_low"].replace(',', ''))
+
+            if high > low and cp > 0:
+                position = (cp - low) / (high - low)
+                price_score = (position - 0.5)
+                if position > 0.7:
+                    price_position_label = "Near High"
+                elif position < 0.3:
+                    price_position_label = "Near Low"
+                drivers.append(f"Price: {price_position_label}")
+            else:
+                drivers.append("Price: Mid range")
+        else:
+            drivers.append("Price: Unknown range")
+    except (TypeError, ValueError):
+        drivers.append("Price: Unknown range")
+
+    # 6. AI Company Signal — gated behind AI_SIGNAL_CACHE to avoid redundant Gemini calls
     ai_company_signal = None
     ai_score = 0.0
     if data.get("company_signal") and data["company_signal"].get("title"):
@@ -276,35 +397,37 @@ def get_stock_data(ticker: str, db: Session = Depends(get_db)):
                     ai_summary = "Signal largely pertains to governance and procedural approvals representing baseline operations."
                 ai_company_signal = {"label": ai_label, "score": ai_score, "impact_summary": ai_summary}
     
-    # 5. Final Stock Insight Calculation (Weighted & Source-Aware)
+    # 7. Final Stock Insight Calculation — 5-component weighted score
+    # Weights rebalanced to include MA technical layer (ma_weight=0.15)
     company_source = data.get("company_signal", {}).get("source", "News") if data.get("company_signal") else "News"
-    
-    company_score_weight = 0.35
-    price_weight = 0.10
-    
+
+    company_score_weight = 0.30    # down from 0.35 to make room for MA
+    price_weight         = 0.10
+    ma_weight            = 0.15    # NEW: moving average technical score
+
     if company_source == "AGM Agenda":
         ai_weight = 0.10
     elif company_source == "Latest Event":
-        ai_weight = 0.20
+        ai_weight = 0.18
     else:
-        ai_weight = 0.30
-        
-    market_weight = 1.0 - company_score_weight - ai_weight - price_weight
-    
+        ai_weight = 0.25
+
+    market_weight = 1.0 - company_score_weight - ai_weight - price_weight - ma_weight
+
     company_val = company_analysis["weighted_company_score"] if company_analysis else 0.0
-    
-    # 5a. Time-decay configuration block (Framework initialized)
-    # TODO: Once date extraction parses natively, apply decay multiplier here bounding 0.0 to 1.0
+
+    # 7a. Time-decay multiplier (framework initialized; apply once date parsing is native)
     time_decay_multiplier = 1.0
     company_val *= time_decay_multiplier
     if getattr(ai_company_signal, "score", None) is not None:
         ai_score *= time_decay_multiplier
-    
+
     final_sentiment_score = (
-        (market_score * market_weight) +
-        (company_val * company_score_weight) +
-        (ai_score * ai_weight) +
-        (price_score * price_weight)
+        (market_score       * market_weight) +
+        (company_val        * company_score_weight) +
+        (ai_score           * ai_weight) +
+        (ma_score           * ma_weight) +
+        (price_score        * price_weight)
     )
     
     if final_sentiment_score >= 0.25:
@@ -440,8 +563,13 @@ def get_stock_data(ticker: str, db: Session = Depends(get_db)):
         "signal_alignment": {
             "status": alignment_status,
             "note": alignment_note
-        }
+        },
+        "technical_indicators": technical_indicators
     }
+    # Promote MA fields to top-level for direct frontend access
+    data["ma5"]  = data.get("ma5")
+    data["ma20"] = data.get("ma20")
+    data["ma180"]= data.get("ma180")
     data["cache_hit"] = False
 
     # ── Populate cache ────────────────────────────────────────────────────

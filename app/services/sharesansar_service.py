@@ -67,6 +67,9 @@ def _fetch_summary(ticker: str) -> Optional[Dict[str, Any]]:
         fifty_two_week_high = None
         fifty_two_week_low = None
         sector = None
+        ma5   = None
+        ma20  = None
+        ma180 = None
 
         # 1. Price Info (Top summary block near "As on:")
         as_on_elem = soup.find(string=re.compile(r"As on\s*:", re.I))
@@ -135,15 +138,39 @@ def _fetch_summary(ticker: str) -> Optional[Dict[str, Any]]:
             if not high_low_match:
                 logger.warning(f"52-Week block NOT found for {ticker}")
 
+        # 4. Moving Averages (MA5, MA20, MA180)
+        # Sharesansar shows these as "Average (5):", "Average (20):", "Average (180):"
+        # or "5 Day MA:", "20 Day MA:", "180 Day MA:" depending on page version.
+        # Flexible regex covers both formats.
+        ma_patterns = [
+            ("ma5",   r"(?:5\s*[Dd]ay\s*MA|Average\s*\(?5\)?)\s*:?\s*([0-9,]+(?:\.[0-9]+)?)"),
+            ("ma20",  r"(?:20\s*[Dd]ay\s*MA|Average\s*\(?20\)?)\s*:?\s*([0-9,]+(?:\.[0-9]+)?)"),
+            ("ma180", r"(?:180\s*[Dd]ay\s*MA|Average\s*\(?180\)?)\s*:?\s*([0-9,]+(?:\.[0-9]+)?)"),
+        ]
+        ma_values = {}
+        for ma_key, pattern in ma_patterns:
+            m = re.search(pattern, full_page_text, re.I)
+            if m:
+                ma_values[ma_key] = m.group(1).replace(",", "")
+                logger.info(f"{ma_key.upper()} found: {ma_values[ma_key]}")
+            else:
+                logger.debug(f"{ma_key.upper()} not found on page")
+        ma5   = ma_values.get("ma5")
+        ma20  = ma_values.get("ma20")
+        ma180 = ma_values.get("ma180")
+
         return {
             "ticker":               ticker.upper(),
-            "company_name":         None,   # populated by router from DB
+            "company_name":         None,
             "sector":               sector,
             "current_price":        current_price,
             "price_change":         price_change,
             "price_change_percent": price_change_percent,
             "fifty_two_week_high":  fifty_two_week_high,
             "fifty_two_week_low":   fifty_two_week_low,
+            "ma5":                  ma5,
+            "ma20":                 ma20,
+            "ma180":                ma180,
         }
 
     except requests.exceptions.RequestException as e:

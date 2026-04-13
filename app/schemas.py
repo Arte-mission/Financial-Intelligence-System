@@ -75,6 +75,14 @@ class SignalAlignment(BaseModel):
     status: str
     note: str
 
+class TechnicalIndicators(BaseModel):
+    ma5:    Optional[str] = None    # 5-day moving average price
+    ma20:   Optional[str] = None    # 20-day moving average price
+    ma180:  Optional[str] = None    # 180-day moving average price
+    ma_signal: Optional[str] = None  # "Bullish" | "Bearish" | "Neutral" | "Mixed"
+    ma_note:   Optional[str] = None  # human-readable interpretation
+    ma_score:  Optional[float] = None  # [-1, 1] contribution to final sentiment
+
 class Insight(BaseModel):
     stock_sentiment: str
     confidence: str
@@ -84,6 +92,7 @@ class Insight(BaseModel):
     company_analysis: Optional[CompanyAnalysis] = None
     ai_company_signal: Optional[AICompanySignal] = None
     signal_alignment: Optional[SignalAlignment] = None
+    technical_indicators: Optional[TechnicalIndicators] = None
 
 class StockResponse(BaseModel):
     ticker: str
@@ -94,6 +103,9 @@ class StockResponse(BaseModel):
     price_change_percent: Optional[str] = None
     fifty_two_week_high: Optional[str] = None
     fifty_two_week_low: Optional[str] = None
+    ma5:   Optional[str] = None   # 5-day moving average
+    ma20:  Optional[str] = None   # 20-day moving average
+    ma180: Optional[str] = None   # 180-day moving average
     headline: Optional[Headline] = None
     company_signal: Optional[CompanySignal] = None
     insight: Optional[Insight] = None
