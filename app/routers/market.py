@@ -25,17 +25,18 @@ NEWSDATA_ENABLED: bool = bool(settings.NEWSDATA_API_KEY)
 
 router = APIRouter(prefix="/market-mood", tags=["Market Sentiment"])
 
-# Cache holds last computed response + state used for change detection
-_mood_cache = {
-    "data":             None,
-    "timestamp":        0,
-    "fingerprint":      None,   # str hash of last scored headline set + labels
-    "source_fp":        None,   # str hash of raw fetched articles (pre relevance-gate)
-    "pulse_label":      None,   # last Market Pulse label written to DB
-    "climate_label":    None,   # last Macro Climate label written to DB
-}
-
-CAME_TTL_SECONDS = 600  # 10 minutes: realistic cadence for Nepal financial news sources
+# ── Macro response cache ────────────────────────────────────────────────────
+# Keyed by "market_mood" — mirrors the STOCK_CACHE pattern in stock.py.
+# Each entry holds the full response + all state needed for change detection.
+#
+# Decision tree on every request:
+#   1. TTL valid?          → return MACRO_CACHE["market_mood"]["data"] instantly
+#   2. TTL expired, source fingerprint unchanged?
+#                          → reset TTL, skip ALL computation, return cached
+#   3. TTL expired + new articles detected?
+#                          → run full sentiment pipeline, update cache
+MACRO_CACHE_TTL = 600   # seconds (10 min) — matches OnlineKhabar news cadence
+MACRO_CACHE: dict = {}  # { "market_mood": {data, ts, source_fp, fingerprint, pulse_label, climate_label} }
 
 
 def _make_source_fingerprint(raw_articles: list) -> str:
@@ -76,11 +77,13 @@ def get_market_sentiment(db: Session = Depends(get_db)):
     App runs fully in OnlineKhabar-only mode when the key is absent.
     Includes a 600-second memory cache (10 min — matches realistic Nepal news cadence).
     """
-    global _mood_cache
     current_time = time.time()
-    if _mood_cache["data"] and (current_time - _mood_cache["timestamp"] < CAME_TTL_SECONDS):
-        cached = _mood_cache["data"]
-        return cached.model_copy(update={"cache_hit": True})
+    _entry = MACRO_CACHE.get("market_mood")
+
+    # ── Layer 1: TTL cache — return instantly if data is still fresh ─────────
+    if _entry and _entry["data"] and (current_time - _entry["ts"] < MACRO_CACHE_TTL):
+        logger.info(f"Macro cache hit (age {int(current_time - _entry['ts'])}s) — returning instantly")
+        return _entry["data"].model_copy(update={"cache_hit": True})
         
     # --- Source pipeline: OnlineKhabar primary, NewsData fallback ---
     MIN_ANALYZED_BEFORE_FALLBACK = 4  # if OKH yields fewer than this, add NewsData
@@ -118,22 +121,24 @@ def get_market_sentiment(db: Session = Depends(get_db)):
             "NewsData not configured — proceeding with OnlineKhabar-only mode."
         )
 
-    # ── Step 2: Source fingerprint — short-circuit if page is unchanged ─────
+    # ── Layer 2: Source fingerprint — skip ALL compute if articles unchanged ──
+    # This fires when TTL just expired but OnlineKhabar published nothing new.
+    # Resets TTL so the NEXT interval also short-circuits without fetching again.
     new_source_fp = _make_source_fingerprint(fetched_raw)
-    prev_source_fp = _mood_cache.get("source_fp")
+    prev_source_fp = _entry["source_fp"] if _entry else None
 
-    if prev_source_fp is not None and new_source_fp == prev_source_fp and _mood_cache["data"] is not None:
-        # Identical article set — skip ALL recomputation
+    if prev_source_fp is not None and new_source_fp == prev_source_fp and _entry and _entry["data"]:
         logger.info(
             f"Source fingerprint unchanged ({new_source_fp[:8]}…) — "
-            "skipping sentiment recomputation, returning cached result."
+            "TTL expired but no new articles; resetting TTL, skipping recomputation."
         )
-        _mood_cache["timestamp"] = time.time()   # reset TTL so next poll also short-circuits
-        cached = _mood_cache["data"]
-        return cached.model_copy(update={
+        MACRO_CACHE["market_mood"]["ts"] = time.time()   # reset TTL
+        return _entry["data"].model_copy(update={
             "cache_hit": True,
             "source_change_status": "No new relevant articles since last refresh"
         })
+
+    # ── Layer 3: Full pipeline — runs only when TTL expired AND articles changed
 
     # ── Step 3: Relevance gate — now apply gating on the fetched raw pool ───
     seen_titles: set = set()
@@ -260,8 +265,8 @@ def get_market_sentiment(db: Session = Depends(get_db)):
     
     previous_score = 0.0
     has_previous = False
-    if _mood_cache["data"] is not None:
-        previous_score = _mood_cache["data"].score
+    if _entry and _entry["data"] is not None:
+        previous_score = _entry["data"].score
         has_previous = True
         
     if has_previous:
@@ -354,9 +359,9 @@ def get_market_sentiment(db: Session = Depends(get_db)):
         macro_layer_status.market_pulse,
         macro_layer_status.macro_climate
     )
-    previous_fingerprint = _mood_cache.get("fingerprint")
-    previous_pulse       = _mood_cache.get("pulse_label")
-    previous_climate     = _mood_cache.get("climate_label")
+    previous_fingerprint = _entry["fingerprint"]   if _entry else None
+    previous_pulse       = _entry["pulse_label"]    if _entry else None
+    previous_climate     = _entry["climate_label"]  if _entry else None
 
     pulse_changed   = (macro_layer_status.market_pulse != previous_pulse)
     climate_changed = (macro_layer_status.macro_climate != previous_climate)
@@ -422,12 +427,15 @@ def get_market_sentiment(db: Session = Depends(get_db)):
         source_change_status=source_change_status
     )
 
-    _mood_cache["data"]          = response_data
-    _mood_cache["timestamp"]     = time.time()
-    _mood_cache["fingerprint"]   = new_fingerprint
-    _mood_cache["source_fp"]     = new_source_fp   # enables next-run short-circuit
-    _mood_cache["pulse_label"]   = macro_layer_status.market_pulse
-    _mood_cache["climate_label"] = macro_layer_status.macro_climate
+    MACRO_CACHE["market_mood"] = {
+        "data":          response_data,
+        "ts":            time.time(),
+        "source_fp":     new_source_fp,     # raw article hash — Layer 2 short-circuit
+        "fingerprint":   new_fingerprint,   # scored headline hash — DB snapshot gate
+        "pulse_label":   macro_layer_status.market_pulse,
+        "climate_label": macro_layer_status.macro_climate,
+    }
+    logger.info(f"MACRO_CACHE populated: score={average_score_rounded}, fp={new_fingerprint[:8]}…")
     
     return response_data
 
