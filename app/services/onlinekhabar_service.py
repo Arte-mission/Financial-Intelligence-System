@@ -49,7 +49,7 @@ SCRAPE_TARGETS = [
 # TTL is deliberately shorter than the market-mood TTL (600s) so fresh content
 # is always available on the first genuine refresh after new articles publish.
 _PAGE_CACHE: Dict[str, Dict] = {}
-PAGE_CACHE_TTL = 480   # 8 minutes per URL
+PAGE_CACHE_TTL = 600   # 10 minutes per URL — aligned with MACRO_CACHE_TTL
 
 
 def _parse_articles_from_page(html: str, source_url: str, limit: int) -> List[Dict[str, Any]]:
