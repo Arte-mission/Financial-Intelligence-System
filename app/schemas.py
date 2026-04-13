@@ -97,6 +97,7 @@ class StockResponse(BaseModel):
     headline: Optional[Headline] = None
     company_signal: Optional[CompanySignal] = None
     insight: Optional[Insight] = None
+    cache_hit: Optional[bool] = None   # True when served from in-memory cache
 
 class CompanyResponse(BaseModel):
     symbol: str

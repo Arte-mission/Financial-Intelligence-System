@@ -29,7 +29,8 @@ router = APIRouter(prefix="/market-mood", tags=["Market Sentiment"])
 _mood_cache = {
     "data":             None,
     "timestamp":        0,
-    "fingerprint":      None,   # str hash of last headline set + labels
+    "fingerprint":      None,   # str hash of last scored headline set + labels
+    "source_fp":        None,   # str hash of raw fetched articles (pre relevance-gate)
     "pulse_label":      None,   # last Market Pulse label written to DB
     "climate_label":    None,   # last Macro Climate label written to DB
 }
@@ -37,9 +38,25 @@ _mood_cache = {
 CAME_TTL_SECONDS = 600  # 10 minutes: realistic cadence for Nepal financial news sources
 
 
+def _make_source_fingerprint(raw_articles: list) -> str:
+    """Fingerprint of the raw article list fetched from all sources.
+    Built BEFORE the relevance gate — captures the true page state.
+    Normalisation: lowercase title, strip punctuation, trim whitespace.
+    Also incorporates URL so a title reuse on a different story is detected.
+    """
+    import hashlib, json, re
+    entries = []
+    for a in raw_articles:
+        title = re.sub(r"[^\w\s]", "", a.get("title", "").lower()).strip()
+        url   = (a.get("url") or "").strip().rstrip("/")
+        entries.append(f"{title}|{url}")
+    payload = sorted(entries)          # order-independent
+    return hashlib.md5(json.dumps(payload).encode()).hexdigest()
+
+
 def _make_fingerprint(headlines: list, score: float, pulse: str, climate: str) -> str:
-    """Deterministic fingerprint of the current article set + signal labels.
-    Two refreshes with identical inputs will produce the same string.
+    """Deterministic fingerprint of the scored headline set + signal labels.
+    Used for DB snapshot gating (write only when signal materially changes).
     """
     import hashlib, json
     payload = {
@@ -69,12 +86,61 @@ def get_market_sentiment(db: Session = Depends(get_db)):
     MIN_ANALYZED_BEFORE_FALLBACK = 4  # if OKH yields fewer than this, add NewsData
     MIN_MACRO_ARTICLES = 3
 
-    seen_titles: set = set()
-    raw_articles: list = []          # each dict has keys: title, source, published_at, url
+    # ── Step 1: Fetch raw articles (no relevance gate yet) ──────────────────
+    # We fingerprint the RAW page output so we can short-circuit before doing
+    # ANY scoring, EMA, driver extraction, or Gemini work when nothing changed.
+    fetched_raw: list = []           # all articles from all sources, pre-gate
     source_breakdown: dict = {"OnlineKhabar": 0, "NewsData": 0}
 
+    # Primary: OnlineKhabar
+    try:
+        ok_articles = fetch_onlinekhabar_news()
+        fetched_raw.extend(ok_articles)
+        logger.info(f"OnlineKhabar fetched {len(ok_articles)} raw articles")
+    except Exception as e:
+        logger.warning(f"OnlineKhabar pipeline failed, proceeding to fallback: {e}")
+        ok_articles = []
+
+    ok_raw_count = len(ok_articles)
+
+    # Optional fallback: NewsData — fetch raw here too so fingerprint is complete
+    nd_articles_raw: list = []
+    if ok_raw_count < MIN_ANALYZED_BEFORE_FALLBACK and NEWSDATA_ENABLED:
+        try:
+            nd_articles_raw, _ = fetch_nepal_business_news()
+            fetched_raw.extend(nd_articles_raw)
+            logger.info(f"NewsData raw fetch: {len(nd_articles_raw)} articles")
+        except Exception as e:
+            logger.warning(f"NewsData fallback failed (continuing with OnlineKhabar only): {e}")
+    elif ok_raw_count < MIN_ANALYZED_BEFORE_FALLBACK and not NEWSDATA_ENABLED:
+        logger.info(
+            f"OnlineKhabar yielded {ok_raw_count} raw articles (below threshold of {MIN_ANALYZED_BEFORE_FALLBACK}). "
+            "NewsData not configured — proceeding with OnlineKhabar-only mode."
+        )
+
+    # ── Step 2: Source fingerprint — short-circuit if page is unchanged ─────
+    new_source_fp = _make_source_fingerprint(fetched_raw)
+    prev_source_fp = _mood_cache.get("source_fp")
+
+    if prev_source_fp is not None and new_source_fp == prev_source_fp and _mood_cache["data"] is not None:
+        # Identical article set — skip ALL recomputation
+        logger.info(
+            f"Source fingerprint unchanged ({new_source_fp[:8]}…) — "
+            "skipping sentiment recomputation, returning cached result."
+        )
+        _mood_cache["timestamp"] = time.time()   # reset TTL so next poll also short-circuits
+        cached = _mood_cache["data"]
+        return cached.model_copy(update={
+            "cache_hit": True,
+            "source_change_status": "No new relevant articles since last refresh"
+        })
+
+    # ── Step 3: Relevance gate — now apply gating on the fetched raw pool ───
+    seen_titles: set = set()
+    raw_articles: list = []
+
     def _dedup_add(articles_in, source_tag):
-        """Add articles that pass the relevance gate and aren't duplicates."""
+        """Filter articles through the relevance gate and deduplicate."""
         added = 0
         for art in articles_in:
             title = art.get("title", "").strip()
@@ -83,7 +149,6 @@ def get_market_sentiment(db: Session = Depends(get_db)):
             tkey = title.lower()
             if tkey in seen_titles:
                 continue
-            # Relevance gate: must score >= 2 to be financially material
             if score_relevance(title) < 2:
                 continue
             seen_titles.add(tkey)
@@ -92,30 +157,14 @@ def get_market_sentiment(db: Session = Depends(get_db)):
             added += 1
         return added
 
-    # 1. Primary: OnlineKhabar
-    try:
-        ok_articles = fetch_onlinekhabar_news()
-        ok_added = _dedup_add(ok_articles, "OnlineKhabar")
-        source_breakdown["OnlineKhabar"] = ok_added
-        logger.info(f"OnlineKhabar contributed {ok_added} relevant articles")
-    except Exception as e:
-        logger.warning(f"OnlineKhabar pipeline failed, proceeding to fallback: {e}")
-        ok_added = 0
+    ok_added = _dedup_add(ok_articles, "OnlineKhabar")
+    source_breakdown["OnlineKhabar"] = ok_added
+    logger.info(f"OnlineKhabar contributed {ok_added} relevant articles")
 
-    # 2. Optional fallback: NewsData (only when key is configured)
-    if ok_added < MIN_ANALYZED_BEFORE_FALLBACK and NEWSDATA_ENABLED:
-        try:
-            nd_articles, _ = fetch_nepal_business_news()
-            nd_added = _dedup_add(nd_articles, "NewsData")
-            source_breakdown["NewsData"] = nd_added
-            logger.info(f"NewsData fallback contributed {nd_added} additional articles")
-        except Exception as e:
-            logger.warning(f"NewsData fallback failed (continuing with OnlineKhabar only): {e}")
-    elif ok_added < MIN_ANALYZED_BEFORE_FALLBACK and not NEWSDATA_ENABLED:
-        logger.info(
-            f"OnlineKhabar yielded {ok_added} articles (below threshold of {MIN_ANALYZED_BEFORE_FALLBACK}). "
-            "NewsData not configured — proceeding with OnlineKhabar-only mode."
-        )
+    if nd_articles_raw:
+        nd_added = _dedup_add(nd_articles_raw, "NewsData")
+        source_breakdown["NewsData"] = nd_added
+        logger.info(f"NewsData contributed {nd_added} relevant articles")
 
     query_used = "OnlineKhabar" + (" + NewsData" if source_breakdown["NewsData"] > 0 else "")
 
@@ -376,6 +425,7 @@ def get_market_sentiment(db: Session = Depends(get_db)):
     _mood_cache["data"]          = response_data
     _mood_cache["timestamp"]     = time.time()
     _mood_cache["fingerprint"]   = new_fingerprint
+    _mood_cache["source_fp"]     = new_source_fp   # enables next-run short-circuit
     _mood_cache["pulse_label"]   = macro_layer_status.market_pulse
     _mood_cache["climate_label"] = macro_layer_status.macro_climate
     

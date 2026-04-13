@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List, Dict, Any
 import logging
+import time
 
 from app.schemas import StockResponse, CompanyResponse
 from app.models import Company
@@ -13,6 +14,20 @@ from app.database import get_db
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Stock Info"])
+
+# ── Stock response cache ──────────────────────────────────────────────────
+# Keyed by ticker (uppercase). Avoids re-running the full scrape + AI pipeline
+# on every request. TTL is set to 12 minutes — fast enough to catch intra-day
+# company events while eliminating redundant Playwright/Gemini calls.
+STOCK_CACHE_TTL = 720   # seconds (12 min)
+STOCK_CACHE: Dict[str, Dict] = {}   # { ticker: {"data": StockResponse dict, "ts": float} }
+
+# ── AI signal cache ───────────────────────────────────────────────────────
+# Gemini calls are the most expensive part of the pipeline (latency + cost).
+# Cache by company_signal title text so we only call Gemini when the
+# underlying company event actually changes.
+AI_CACHE_TTL = 1800     # seconds (30 min)
+AI_SIGNAL_CACHE: Dict[str, Dict] = {}   # { title_key: {"signal": dict, "ts": float} }
 
 @router.get("/tickers/debug", response_model=Dict[str, Any])
 def debug_tickers(db: Session = Depends(get_db)):
@@ -51,21 +66,34 @@ def search_tickers(q: str, db: Session = Depends(get_db)):
 @router.get("/stock/{ticker}", response_model=StockResponse)
 def get_stock_data(ticker: str, db: Session = Depends(get_db)):
     """
-    Retrieves company data. Validates against the companies table first.
+    Retrieves and scores company data from Sharesansar.
+    Results are cached for STOCK_CACHE_TTL seconds (12 min) per ticker to avoid
+    redundant scraping and Gemini calls on every frontend refresh.
     """
+    ticker_upper = ticker.upper()
+
+    # ── Fast path: return cached response ────────────────────────────────
+    cached = STOCK_CACHE.get(ticker_upper)
+    if cached and (time.time() - cached["ts"] < STOCK_CACHE_TTL):
+        logger.info(f"Stock cache hit for {ticker_upper} (age {int(time.time() - cached['ts'])}s)")
+        result = cached["data"].copy()
+        result["cache_hit"] = True
+        return StockResponse(**result)
+
+    # ── Slow path: full scrape + analysis ────────────────────────────────
     company = get_company_by_ticker(db, ticker)
     if not company:
         raise HTTPException(
-            status_code=400, 
+            status_code=400,
             detail="This instrument is not supported. Only equity stocks are allowed."
         )
-        
+
     data = get_company_data(ticker)
-    
+
     if not data:
         raise HTTPException(
-            status_code=404, 
-            detail=f"Company with ticker '{ticker.upper()}' data unavailable on Sharesansar."
+            status_code=404,
+            detail=f"Company with ticker '{ticker_upper}' data unavailable on Sharesansar."
         )
         
     # Inject database metadata into the response
@@ -213,37 +241,40 @@ def get_stock_data(ticker: str, db: Session = Depends(get_db)):
     except (TypeError, ValueError):
         drivers.append("Price: Unknown range")
 
-    # 4. AI Company Signal (Gemini Developer API with simulated fallback)
+    # 4. AI Company Signal — gated behind AI_SIGNAL_CACHE to avoid redundant Gemini calls
     ai_company_signal = None
     ai_score = 0.0
     if data.get("company_signal") and data["company_signal"].get("title"):
         title_text = data["company_signal"]["title"]
-        try:
-            from app.services.ai_signal_service import generate_ai_company_signal
-            ai_company_signal = generate_ai_company_signal(title_text)
+        title_key  = title_text.lower().strip()
+
+        # Check AI cache first
+        ai_cached = AI_SIGNAL_CACHE.get(title_key)
+        if ai_cached and (time.time() - ai_cached["ts"] < AI_CACHE_TTL):
+            logger.info(f"AI signal cache hit for '{title_key[:40]}...'")
+            ai_company_signal = ai_cached["signal"]
             ai_score = ai_company_signal.get("score", 0.0)
-            logger.info("Successfully fetched AI company signal via native Gemini API.")
-        except Exception as ai_err:
-            logger.warning(f"Gemini failed, falling back to simulated logic: {ai_err}")
-            title_lower = title_text.lower()
-            if any(w in title_lower for w in ["dividend", "bonus", "profit", "right share", "ipo"]):
-                ai_score = 0.45
-                ai_label = "Positive"
-                ai_summary = "Signal includes strategic or material corporate actions (e.g. dividend expansion) interpreted as mildly positive for shareholder equity."
-            elif any(w in title_lower for w in ["issue", "loss", "penalty", "decline", "suspend", "resignation"]):
-                ai_score = -0.50
-                ai_label = "Negative"
-                ai_summary = "Signal flags restructuring or negative risk factors that constrain forward momentum."
-            else:
-                ai_score = 0.0
-                ai_label = "Neutral"
-                ai_summary = "Signal largely pertains to governance and procedural approvals representing baseline operations."
-                
-            ai_company_signal = {
-                "label": ai_label,
-                "score": ai_score,
-                "impact_summary": ai_summary
-            }
+        else:
+            try:
+                from app.services.ai_signal_service import generate_ai_company_signal
+                ai_company_signal = generate_ai_company_signal(title_text)
+                ai_score = ai_company_signal.get("score", 0.0)
+                # Store in AI cache
+                AI_SIGNAL_CACHE[title_key] = {"signal": ai_company_signal, "ts": time.time()}
+                logger.info(f"AI company signal generated and cached for '{title_key[:40]}...'")
+            except Exception as ai_err:
+                logger.warning(f"Gemini failed, falling back to simulated logic: {ai_err}")
+                title_lower = title_text.lower()
+                if any(w in title_lower for w in ["dividend", "bonus", "profit", "right share", "ipo"]):
+                    ai_score = 0.45; ai_label = "Positive"
+                    ai_summary = "Signal includes strategic or material corporate actions (e.g. dividend expansion) interpreted as mildly positive for shareholder equity."
+                elif any(w in title_lower for w in ["issue", "loss", "penalty", "decline", "suspend", "resignation"]):
+                    ai_score = -0.50; ai_label = "Negative"
+                    ai_summary = "Signal flags restructuring or negative risk factors that constrain forward momentum."
+                else:
+                    ai_score = 0.0; ai_label = "Neutral"
+                    ai_summary = "Signal largely pertains to governance and procedural approvals representing baseline operations."
+                ai_company_signal = {"label": ai_label, "score": ai_score, "impact_summary": ai_summary}
     
     # 5. Final Stock Insight Calculation (Weighted & Source-Aware)
     company_source = data.get("company_signal", {}).get("source", "News") if data.get("company_signal") else "News"
@@ -411,5 +442,10 @@ def get_stock_data(ticker: str, db: Session = Depends(get_db)):
             "note": alignment_note
         }
     }
+    data["cache_hit"] = False
+
+    # ── Populate cache ────────────────────────────────────────────────────
+    STOCK_CACHE[ticker_upper] = {"data": data.copy(), "ts": time.time()}
+    logger.info(f"Stock cache populated for {ticker_upper}")
 
     return StockResponse(**data)

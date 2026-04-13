@@ -19,6 +19,7 @@ Returns normalized article dicts: {title, url, source, published_at}
 import requests
 import logging
 import re
+import time
 from typing import List, Dict, Any
 from bs4 import BeautifulSoup
 
@@ -42,6 +43,13 @@ SCRAPE_TARGETS = [
     ("https://english.onlinekhabar.com/?s=nepal+economy",    6),
     ("https://english.onlinekhabar.com/?s=banking+nepal",    6),
 ]
+
+# ── Per-URL HTTP response cache ──────────────────────────────────────────────
+# Each entry: { url: {"html": str, "ts": float} }
+# TTL is deliberately shorter than the market-mood TTL (600s) so fresh content
+# is always available on the first genuine refresh after new articles publish.
+_PAGE_CACHE: Dict[str, Dict] = {}
+PAGE_CACHE_TTL = 480   # 8 minutes per URL
 
 
 def _parse_articles_from_page(html: str, source_url: str, limit: int) -> List[Dict[str, Any]]:
@@ -105,19 +113,31 @@ def _parse_articles_from_page(html: str, source_url: str, limit: int) -> List[Di
 def fetch_onlinekhabar_news() -> List[Dict[str, Any]]:
     """
     Scrapes multiple OnlineKhabar pages for Nepal financial news.
+    Each page response is cached for PAGE_CACHE_TTL seconds (8 min).
     Deduplicates results by normalized title.
     Returns a list of article dicts: {title, url, source, published_at}.
     """
     seen_titles: set = set()
     all_articles: List[Dict[str, Any]] = []
+    now = time.time()
 
     for page_url, limit in SCRAPE_TARGETS:
         try:
-            logger.info(f"OnlineKhabar fetch: {page_url}")
-            response = requests.get(page_url, headers=HEADERS, timeout=12)
-            response.raise_for_status()
+            # ── Check per-URL page cache first ───────────────────────────
+            page_cached = _PAGE_CACHE.get(page_url)
+            if page_cached and (now - page_cached["ts"] < PAGE_CACHE_TTL):
+                html = page_cached["html"]
+                age  = int(now - page_cached["ts"])
+                logger.info(f"Page cache hit for {page_url} (age {age}s)")
+            else:
+                # ── Live fetch ──────────────────────────────────────────
+                logger.info(f"OnlineKhabar live fetch: {page_url}")
+                response = requests.get(page_url, headers=HEADERS, timeout=12)
+                response.raise_for_status()
+                html = response.text
+                _PAGE_CACHE[page_url] = {"html": html, "ts": now}
 
-            articles = _parse_articles_from_page(response.text, page_url, limit)
+            articles = _parse_articles_from_page(html, page_url, limit)
             added = 0
 
             for article in articles:

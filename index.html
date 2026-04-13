@@ -2224,10 +2224,18 @@
             document.getElementById('uiCompanyName').textContent = data.company_name || '—';
             document.getElementById('uiSector').textContent = data.sector || '—';
 
-            // Freshness
+            // Freshness — distinguish cache hits vs live fetches
             const fresh = document.getElementById('uiStockFreshness');
             fresh.style.display = 'inline';
-            fresh.textContent = timeAgo(new Date());
+            if (data.cache_hit) {
+                fresh.textContent = '⚡ Cached · ' + timeAgo(new Date());
+                fresh.style.color = 'var(--text-muted)';
+                fresh.title = 'Served from 12-minute cache — no Gemini call was made';
+            } else {
+                fresh.textContent = '🔴 Live · ' + timeAgo(new Date());
+                fresh.style.color = 'var(--bullish)';
+                fresh.title = 'Fresh analysis — full scrape and AI pipeline ran';
+            }
 
             // Watchlist state
             updateWatchlistButton(ticker);
