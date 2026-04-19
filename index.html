@@ -167,7 +167,7 @@
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
             overflow: hidden;
-            margin-bottom: 2rem;
+            margin-bottom: 0.6rem;
         }
 
         .snap-cell {
@@ -602,6 +602,209 @@
             flex-shrink: 0;
         }
 
+        /* ── SPRINT 5: WATCHLIST INTELLIGENCE FEED ────────────── */
+        .watchlist-feed-panel {
+            margin-bottom: 1.5rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .feed-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.875rem;
+        }
+
+        .feed-items-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .feed-item-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--neutral);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .feed-item-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: var(--border-2);
+            transform: translateX(4px);
+        }
+
+        .feed-item-card.sev-high {
+            border-left-color: var(--bearish);
+        }
+
+        .feed-item-card.sev-medium {
+            border-left-color: var(--mild-bearish);
+        }
+
+        .feed-item-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.4rem;
+        }
+
+        .feed-item-ticker {
+            font-weight: 800;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            color: var(--text);
+        }
+
+        .feed-item-headline {
+            font-size: 0.92rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--text);
+            line-height: 1.3;
+        }
+
+        .feed-item-summary {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .feed-empty {
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px dashed var(--border-2);
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* ── SPRINT 4: PREMIUM LOADING STYLES ────────────────── */
+        .loading-status-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+            padding: 1.25rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            min-height: 3.5rem;
+        }
+
+        .analyzer-pulse {
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            box-shadow: 0 0 12px var(--accent);
+            animation: analyzer-throb 1.4s infinite ease-in-out;
+            flex-shrink: 0;
+        }
+
+        @keyframes analyzer-throb {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.6;
+            }
+
+            50% {
+                transform: scale(1.5);
+                opacity: 1;
+                box-shadow: 0 0 20px var(--accent);
+            }
+        }
+
+        .loading-text {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        /* ── SPRINT 4: ACTIVE INTELLIGENCE STYLES ────────────── */
+        .alerts-panel {
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .alert-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1.25rem;
+            border-radius: var(--radius-sm);
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            font-size: 0.88rem;
+            animation: slide-in-top 0.4s ease-out forwards;
+        }
+
+        .alert-item.sev-high {
+            border-color: rgba(239, 68, 68, 0.4);
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.1);
+        }
+
+        .alert-item.sev-medium {
+            border-color: rgba(245, 158, 11, 0.4);
+        }
+
+        .alert-icon {
+            font-size: 1.1rem;
+        }
+
+        .what-changed-panel {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .wc-header {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--accent);
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .wc-list {
+            margin: 0;
+            padding-left: 1.25rem;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            line-height: 1.6;
+        }
+
+        @keyframes slide-in-top {
+            from {
+                transform: translateY(-10px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
         .why-text strong {
             color: var(--text);
         }
@@ -732,33 +935,161 @@
             flex-shrink: 0;
         }
 
-        /* ── MA CHIPS ───────────────────────────── */
-        .ma-chip {
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 8px;
-            padding: 0.55rem 0.6rem;
-            text-align: center;
-            position: relative;
-            transition: border-color 0.2s;
+        /* ── TECHNICAL CONFIRMATION ──────────────── */
+        .tech-section {
+            margin-top: 1.5rem;
+            padding: 1.35rem;
+            background: rgba(15, 23, 42, 0.3);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
         }
-        .ma-chip-label {
-            font-size: 0.68rem;
-            color: var(--text-muted);
-            letter-spacing: 0.06em;
+
+        .tech-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .tech-title {
+            font-size: 0.75rem;
             text-transform: uppercase;
-            margin-bottom: 0.2rem;
-        }
-        .ma-chip-val {
-            font-size: 0.92rem;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
             font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tech-score-val {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.35);
+        }
+
+        .pivot-ladder {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .pivot-col {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .pivot-col-label {
+            font-size: 0.62rem;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            letter-spacing: 1.2px;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .pivot-item {
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid transparent;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            transition: all 0.2s ease;
+        }
+
+        .pivot-item.highlight {
+            background: rgba(59, 130, 246, 0.08);
+            border-color: rgba(59, 130, 246, 0.25);
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .pivot-val {
+            display: block;
+            font-family: 'Inter', ui-monospace, monospace;
+            letter-spacing: -0.2px;
+        }
+
+        .price-context-note {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-style: italic;
+            text-align: center;
+            margin-bottom: 1.25rem;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.015);
+            border-radius: 6px;
+        }
+
+        .ma-signals-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .ma-signal-card {
+            text-align: center;
+            padding: 0.75rem 0.5rem;
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .ma-label {
+            font-size: 0.62rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            margin-bottom: 0.4rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .ma-val {
+            font-size: 0.9rem;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 0.6rem;
             color: var(--text);
         }
-        .ma-chip-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            margin: 0.3rem auto 0;
+
+        .sig-badge {
+            font-size: 0.62rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .sig-bull {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--bullish);
+        }
+
+        .sig-bear {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--bearish);
+        }
+
+        .sig-neut {
+            background: rgba(148, 163, 184, 0.15);
+            color: var(--neutral);
+        }
+
+        .tech-summary-text {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.6;
+            margin-top: 1.25rem;
+            padding-top: 1rem;
+            border-top: 1px dashed var(--border);
         }
 
         /* ── PRICE METRICS ──────────────────────── */
@@ -1490,9 +1821,9 @@
             </div>
             <div class="snap-cell">
                 <div class="snap-label">
-                    Macro Climate
+                    Macro Tone
                     <span class="tip"
-                        data-tip="Broader Nepal financial backdrop, incorporating banking, NRB policy, and economic data. Only shown when sufficient coverage is available.">
+                        data-tip="Broader structural sentiment combined with underlying momentum pressure (e.g. 'Neutral + Cautious').">
                         <span class="tip-icon">?</span>
                     </span>
                 </div>
@@ -1505,6 +1836,11 @@
             <div class="snap-summary" id="snapSummary">
                 Loading today's market intelligence…
             </div>
+        </div>
+
+        <!-- ── GLOBAL CYCLE STATUS (Empty state for snapshot bar) ───────────────── -->
+        <div id="uiGlobalCycleStatus"
+            style="text-align:center; font-size:0.8rem; color:var(--text-muted); font-style:italic; opacity:0.8; margin-bottom:2rem; display:none;">
         </div>
 
         <!-- ── HERO + SEARCH ─────────────────────────── -->
@@ -1593,15 +1929,17 @@
                         </div>
                         <div class="skel" style="width:80px;height:2.4rem;border-radius:20px;"></div>
                     </div>
-                    <div class="skel" style="width:100%;height:160px;border-radius:14px;"></div>
+
+                    <!-- AI Analyzer Overlay -->
+                    <div class="loading-status-container">
+                        <div class="analyzer-pulse"></div>
+                        <div id="loadingStatusText" class="loading-text">Initializing intelligence sequence...</div>
+                    </div>
+
+                    <div class="skel" style="width:100%;height:120px;border-radius:14px;"></div>
                     <div class="skel" style="width:60%;height:1rem;"></div>
                     <div class="skel" style="width:100%;height:1rem;"></div>
                     <div class="skel" style="width:80%;height:1rem;"></div>
-                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;">
-                        <div class="skel" style="height:3rem;border-radius:10px;"></div>
-                        <div class="skel" style="height:3rem;border-radius:10px;"></div>
-                        <div class="skel" style="height:3rem;border-radius:10px;"></div>
-                    </div>
                 </div>
 
                 <!-- Stock Card -->
@@ -1627,6 +1965,9 @@
                             </button>
                         </div>
                     </div>
+
+                    <!-- Alerts Container -->
+                    <div id="alertsContainer" class="alerts-panel" style="display:none;"></div>
 
                     <!-- Conviction Block -->
                     <div class="conviction-block" id="convictionBlock">
@@ -1676,6 +2017,14 @@
                     <!-- Reasoning -->
                     <div class="reasoning-block" id="reasoningBlock"></div>
 
+                    <!-- What Changed -->
+                    <div id="whatChangedContainer" class="what-changed-panel" style="display:none;">
+                        <div class="wc-header">
+                            <span>✨</span> What Changed
+                        </div>
+                        <ul id="whatChangedList" class="wc-list"></ul>
+                    </div>
+
                     <!-- Drivers -->
                     <div class="drivers-section">
                         <div class="section-label">
@@ -1707,34 +2056,72 @@
                         </div>
                     </div>
 
-                    <!-- Moving Average Indicators -->
-                    <div id="maPanel" style="display:none;margin-top:1rem;padding:0.85rem 1rem;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;">
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.65rem;">
-                            <span class="section-label" style="font-size:0.72rem;margin:0;">Technical — Moving Averages
-                                <span class="tip" data-tip="MA5, MA20, and MA180 reflect Nepal market price trends over 5, 20, and 180 trading days. A bullish MA signal means price momentum is trending upward across multiple timeframes.">
+                    <!-- Technical Confirmation (Sprint 3) -->
+                    <div id="techSection" class="tech-section" style="display:none;">
+                        <div class="tech-header-row">
+                            <span class="tech-title">
+                                Technical Confirmation
+                                <span class="tip"
+                                    data-tip="Supporting technical analysis including trend confirmation via Moving Averages and price zones via Pivot Points.">
                                     <span class="tip-icon">?</span>
                                 </span>
                             </span>
-                            <span id="uiMASignalBadge" style="font-size:0.72rem;font-weight:700;padding:2px 10px;border-radius:20px;letter-spacing:0.04em;"></span>
+                            <span class="tech-score-val" id="uiTechScoreRow"></span>
                         </div>
-                        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;">
-                            <div class="ma-chip" id="maChip5">
-                                <div class="ma-chip-label">MA5</div>
-                                <div class="ma-chip-val" id="uiMA5">—</div>
-                                <div class="ma-chip-dot" id="uiMA5Dot"></div>
+
+                        <!-- Pivot Ladder -->
+                        <div class="pivot-ladder" id="uiPivotLadder">
+                            <div class="pivot-col">
+                                <div class="pivot-col-label">Support</div>
+                                <div class="pivot-item" id="pvS3"><span class="pivot-val"></span> <span
+                                        style="font-size:0.6rem;">S3</span></div>
+                                <div class="pivot-item" id="pvS2"><span class="pivot-val"></span> <span
+                                        style="font-size:0.6rem;">S2</span></div>
+                                <div class="pivot-item" id="pvS1"><span class="pivot-val"></span> <span
+                                        style="font-size:0.6rem;">S1</span></div>
                             </div>
-                            <div class="ma-chip" id="maChip20">
-                                <div class="ma-chip-label">MA20</div>
-                                <div class="ma-chip-val" id="uiMA20">—</div>
-                                <div class="ma-chip-dot" id="uiMA20Dot"></div>
+                            <div class="pivot-col">
+                                <div class="pivot-col-label">Pivot</div>
+                                <div style="flex:1;display:flex;align-items:center;justify-content:center;">
+                                    <div class="pivot-item" id="pvPP" style="width:100%;"><span
+                                            class="pivot-val"></span> <span style="font-size:0.6rem;">PP</span></div>
+                                </div>
                             </div>
-                            <div class="ma-chip" id="maChip180">
-                                <div class="ma-chip-label">MA180</div>
-                                <div class="ma-chip-val" id="uiMA180">—</div>
-                                <div class="ma-chip-dot" id="uiMA180Dot"></div>
+                            <div class="pivot-col">
+                                <div class="pivot-col-label">Resistance</div>
+                                <div class="pivot-item" id="pvR1"><span class="pivot-val"></span> <span
+                                        style="font-size:0.6rem;">R1</span></div>
+                                <div class="pivot-item" id="pvR2"><span class="pivot-val"></span> <span
+                                        style="font-size:0.6rem;">R2</span></div>
+                                <div class="pivot-item" id="pvR3"><span class="pivot-val"></span> <span
+                                        style="font-size:0.6rem;">R3</span></div>
                             </div>
                         </div>
-                        <div id="uiMANote" style="font-size:0.75rem;color:var(--text-muted);margin-top:0.55rem;font-style:italic;"></div>
+
+                        <!-- Price Context Note -->
+                        <div id="uiPriceContextNote" class="price-context-note" style="display:none;"></div>
+
+                        <!-- Moving Averages -->
+                        <div class="ma-signals-row">
+                            <div class="ma-signal-card">
+                                <div class="ma-label">MA5</div>
+                                <span class="ma-val" id="uiTechMA5">—</span>
+                                <span class="sig-badge" id="uiTechMA5Sig">—</span>
+                            </div>
+                            <div class="ma-signal-card">
+                                <div class="ma-label">MA20</div>
+                                <span class="ma-val" id="uiTechMA20">—</span>
+                                <span class="sig-badge" id="uiTechMA20Sig">—</span>
+                            </div>
+                            <div class="ma-signal-card">
+                                <div class="ma-label">MA180</div>
+                                <span class="ma-val" id="uiTechMA180">—</span>
+                                <span class="sig-badge" id="uiTechMA180Sig">—</span>
+                            </div>
+                        </div>
+
+                        <!-- Technical Summary -->
+                        <div id="uiTechSummary" class="tech-summary-text" style="display:none;"></div>
                     </div>
 
                     <!-- Company Event -->
@@ -1791,6 +2178,18 @@
             <!-- RIGHT: Market Intelligence -->
             <div class="right-col">
 
+                <!-- Watchlist Intelligence Feed (Sprint 5) -->
+                <div class="card watchlist-feed-panel" id="watchlistIntelligencePanel" style="display:none;">
+                    <div class="feed-header">
+                        <div class="section-label" style="margin:0;">Intelligence Feed</div>
+                        <span
+                            style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">Watchlist</span>
+                    </div>
+                    <div id="watchlistFeedItems" class="feed-items-container">
+                        <!-- Items populated via JS -->
+                    </div>
+                </div>
+
                 <!-- Watchlist Panel -->
                 <div class="card" id="watchlistPanel" style="display:none;margin-bottom:1.5rem;">
                     <div class="section-label" style="margin-bottom:0.75rem;">★ Watchlist</div>
@@ -1803,8 +2202,11 @@
                 <div class="card">
                     <div class="mood-header">
                         <div class="mood-title">Financial Climate</div>
-                        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.2rem;">
-                            <span class="freshness" id="uiMarketFreshness" style="display:none;"></span>
+                        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.3rem;">
+                            <span class="freshness" id="uiMarketChecked"
+                                style="display:none; color:var(--text-muted);"></span>
+                            <span class="freshness" id="uiMarketUpdated"
+                                style="display:none; margin-bottom: 0.2rem;"></span>
                             <span class="countdown" id="uiMarketCountdown"></span>
                         </div>
                     </div>
@@ -1825,6 +2227,9 @@
                                         </span>
                                     </div>
                                     <div class="layer-val" id="uiMoodLabel">—</div>
+                                    <div class="layer-tone" id="uiMoodTone"
+                                        style="font-size:0.75rem;color:var(--text-muted);font-style:italic;margin-top:0.2rem;">
+                                    </div>
                                 </div>
                                 <div class="score-col">
                                     <div class="layer-score" id="uiMoodScore">—</div>
@@ -1848,8 +2253,18 @@
                         </div>
                     </div>
 
+                    <!-- Cycle Note -->
+                    <div id="uiCycleNote"
+                        style="display:none; font-size:0.82rem; color:var(--text-muted); line-height:1.4; padding:0.5rem 0.6rem; background:rgba(255,255,255,0.02); border-radius:4px; margin-top: 0.8rem;">
+                    </div>
+
                     <!-- Why This Matters (Macro) -->
-                    <div class="why-macro" id="uiMacroWhy"></div>
+                    <div class="why-macro" id="uiMacroWhy" style="margin-top: 0.8rem;"></div>
+
+                    <!-- Macro Reasoning -->
+                    <div class="ai-body" id="uiMacroReasoning"
+                        style="display:none; margin-bottom:1.25rem; background:rgba(255,255,255,0.03); border-left-color:var(--text-muted); font-size:0.85rem;">
+                    </div>
 
                     <!-- Delta -->
                     <div class="delta-block" id="uiDeltaBlock">
@@ -1862,7 +2277,8 @@
                         <div class="hl-header">
                             <div class="section-label" style="margin:0;">
                                 Analyzed Headlines
-                                <span style="color:var(--text-dim);font-weight:400;font-size:0.68rem;">&nbsp;(<span
+                                <span id="uiHeadlineVolumeText"
+                                    style="color:var(--text-dim);font-weight:400;font-size:0.68rem;">&nbsp;(<span
                                         id="uiHeadlineCount">0</span> scored)</span>
                             </div>
                             <div class="hl-source-note" id="uiSourceNote"></div>
@@ -1878,7 +2294,10 @@
 
                     <!-- History -->
                     <div class="history-section">
-                        <div class="section-label" style="margin-bottom:0.75rem;">Signal Timeline</div>
+                        <div class="section-label" style="margin-bottom:0.3rem;">Signal Timeline</div>
+                        <div id="uiTimelineNote"
+                            style="font-size:0.75rem; color:var(--text-muted); font-style:italic; margin-bottom:0.75rem; display:none;">
+                        </div>
                         <div class="history-timeline" id="uiHistoryTimeline">
                             <div style="font-size:0.8rem;color:var(--text-muted);text-align:center;padding:0.75rem;">
                                 Loading history…</div>
@@ -1913,11 +2332,47 @@
         let compareList = [];   // [{ticker, data}]
         let watchlist = [];   // [{ticker, name, sentiment, confidence}]
 
+        // ── SPRINT 4: LOADING LOGIC ─────────────────────────────────────────
+        const LOADING_STAGES = [
+            "Scanning company signals...",
+            "Reviewing market sentiment...",
+            "Analyzing technical confirmation...",
+            "Checking support and resistance levels...",
+            "Reviewing macro climate...",
+            "Synthesizing investor-ready insight..."
+        ];
+        let loadingCycleInterval = null;
+
+        function cycleLoadingMessages() {
+            const textEl = document.getElementById('loadingStatusText');
+            if (!textEl) return;
+            let currentStage = 0;
+            textEl.style.opacity = '1';
+            textEl.textContent = LOADING_STAGES[0];
+
+            clearInterval(loadingCycleInterval);
+            loadingCycleInterval = setInterval(() => {
+                textEl.style.opacity = '0';
+                setTimeout(() => {
+                    currentStage = (currentStage + 1) % LOADING_STAGES.length;
+                    textEl.textContent = LOADING_STAGES[currentStage];
+                    textEl.style.opacity = '1';
+                }, 300);
+            }, 1800);
+        }
+
+        function stopLoadingMessages() {
+            clearInterval(loadingCycleInterval);
+        }
+
         // ── BOOT ───────────────────────────────────────────────────────────────────
         document.addEventListener('DOMContentLoaded', () => {
             loadWatchlist();
             fetchMarketContext(true);
-            marketIntervalId = setInterval(() => fetchMarketContext(false), MARKET_REFRESH_MS);
+            marketIntervalId = setInterval(() => {
+                fetchMarketContext(false);
+                fetchWatchlistIntelligence();
+            }, MARKET_REFRESH_MS);
             startCountdown();
         });
 
@@ -1945,13 +2400,15 @@
 
         function startCountdown() {
             if (countdownId) clearInterval(countdownId);
-            nextMarketRefresh = Date.now() + MARKET_REFRESH_MS;
+            const el = document.getElementById('uiMarketCountdown');
             countdownId = setInterval(() => {
+                if (!nextMarketRefresh) return;
                 const rem = Math.max(0, Math.ceil((nextMarketRefresh - Date.now()) / 1000));
-                const m = Math.floor(rem / 60);
-                const s = rem % 60;
-                const el = document.getElementById('uiMarketCountdown');
-                if (el) el.textContent = rem > 0 ? `Next refresh ~${m}m ${s}s` : '';
+                if (rem === 0) { el.textContent = 'Refreshing...'; } else {
+                    const m = Math.floor(rem / 60);
+                    const s = rem % 60;
+                    el.textContent = `Next refresh ~${m}m ${s}s`;
+                }
             }, 1000);
         }
 
@@ -2014,14 +2471,16 @@
 
         // ── MARKET FETCH ──────────────────────────────────────────────────────────
         async function fetchMarketContext(initial = false) {
-            // Reset countdown
-            nextMarketRefresh = Date.now() + MARKET_REFRESH_MS;
-
             try {
                 const r = await fetch(`${API_BASE}/market-mood`);
                 if (!r.ok) return;
                 const d = await r.json();
                 activeMarketData = d;
+
+                // Set the exact shared next_check_at time if provided by backend
+                // otherwise fallback to generous polling
+                nextMarketRefresh = d.next_check_at ? new Date(d.next_check_at + "Z").getTime() : Date.now() + MARKET_REFRESH_MS;
+
                 renderMarketPanel(d, initial);
             } catch (e) {
                 console.warn('Market mood fetch failed', e);
@@ -2038,25 +2497,89 @@
 
         function renderMarketPanel(d, initial) {
             // Freshness
-            const freshEl = document.getElementById('uiMarketFreshness');
-            freshEl.style.display = 'inline';
-            freshEl.textContent = timeAgo(new Date());
+            const checkEl = document.getElementById('uiMarketChecked');
+            const upEl = document.getElementById('uiMarketUpdated');
+            checkEl.style.display = 'inline';
+            upEl.style.display = 'inline';
+
+            checkEl.textContent = 'Checked ' + (d.last_checked ? timeAgo(new Date(d.last_checked)) : timeAgo(new Date()));
+            // Only show updated separately if it's materially different, else hide it to avoid clutter
+            const upTimeStr = d.last_updated ? timeAgo(new Date(d.last_updated)) : 'Recently';
+            upEl.textContent = 'Signal changed ' + upTimeStr.replace('Updated ', '').toLowerCase();
 
             // Snapshot bar
             const layer = d.macro_layer_status;
             if (layer) {
                 const pulse = layer.market_pulse || '—';
-                const climate = layer.coverage_sufficient ? (layer.macro_climate || '—') : 'Low Coverage';
+                let climateBase = layer.coverage_sufficient ? (layer.macro_climate || '—') : 'Low Coverage';
+
+                // Tone Synthesis from drift and textual reasoning
+                const driftText = d.drift ? d.drift.status : 'Stable';
+                const driftVal = d.drift ? d.drift.change : 0;
+
+                const macroText = (d.macro_reasoning || '').toLowerCase();
+                const driversStr = (d.drivers || []).join(' ').toLowerCase();
+                const combinedText = macroText + " " + driversStr;
+
+                let isWeak = /weakness|tightening|pressure|cautious|downside|friction|slowing|struggles|contraction/.test(combinedText);
+                let isStrong = /strengthening|breakout|easing|upside|momentum|growth|catalysts|expansion/.test(combinedText);
+
+                let toneStr = 'Settled';
+                if (driftText === 'Significant' && driftVal < 0) toneStr = 'Under pressure';
+                else if (driftText === 'Moderate' && driftVal < 0) toneStr = 'Weakening';
+                else if (driftText === 'Moderate' && driftVal > 0) toneStr = 'Strengthening';
+                else if (driftText === 'Significant' && driftVal > 0) toneStr = 'Accelerating';
+                else {
+                    if (isWeak && isStrong) toneStr = 'Mixed';
+                    else if (isWeak) toneStr = 'Cautious';
+                    else if (isStrong) toneStr = 'Optimistic';
+                    else toneStr = 'Stable';
+                }
+
+                let finalToneDisplay = climateBase;
+                if (layer.coverage_sufficient && climateBase !== '—') {
+                    // Prevent massive repetition, e.g., "Bearish + Under pressure" is fine, but formatting helps.
+                    finalToneDisplay = `${climateBase} · ${toneStr}`;
+                }
+
                 document.getElementById('snapPulse').textContent = pulse;
                 document.getElementById('snapPulse').style.color = sentimentColor(pulse);
-                document.getElementById('snapClimate').textContent = climate;
-                document.getElementById('snapClimate').style.color = layer.coverage_sufficient ? sentimentColor(climate) : 'var(--text-muted)';
+                document.getElementById('snapClimate').textContent = finalToneDisplay;
+                document.getElementById('snapClimate').style.color = layer.coverage_sufficient ? sentimentColor(climateBase) : 'var(--text-muted)';
             }
             const conf = d.macro_confidence || '—';
             document.getElementById('snapConf').textContent = conf;
             document.getElementById('snapConf').style.color = confidenceColor(conf);
-            document.getElementById('snapSummary').innerHTML =
-                d.delta_summary ? `<strong>Today:</strong> ${d.delta_summary}` : 'Analyzing market conditions…';
+            const snapSummary = document.getElementById('snapSummary');
+            const globalCycleStatus = document.getElementById('uiGlobalCycleStatus');
+
+            const isNoChange = d.delta_summary && /No major/i.test(d.delta_summary);
+
+            if (isNoChange) {
+                snapSummary.style.display = 'none';
+
+                let msgs = [];
+                if (d.relevant_article_count > 0 && d.source_change === true) {
+                    msgs = [
+                        'Fresh coverage reviewed — no major shift detected this cycle.',
+                        'New relevant updates processed, but the macro view holds steady.',
+                        'Fresh inputs processed — no material trajectory shift.'
+                    ];
+                } else {
+                    msgs = [
+                        'Latest source check confirmed the existing macro state.',
+                        'Market rechecked — current signal remains unchanged.',
+                        'Latest review confirms no material shift.'
+                    ];
+                }
+                const randomMsg = msgs[Math.floor(Math.random() * msgs.length)];
+                globalCycleStatus.textContent = randomMsg;
+                globalCycleStatus.style.display = 'block';
+            } else {
+                snapSummary.innerHTML = d.delta_summary ? `<strong>Today:</strong> ${d.delta_summary}` : 'Analyzing market conditions…';
+                snapSummary.style.display = 'block';
+                globalCycleStatus.style.display = 'none';
+            }
 
             // Score fade
             const scoreEl = document.getElementById('uiMoodScore');
@@ -2068,11 +2591,67 @@
                 scoreEl.textContent = newScore;
             }
 
+            // Cycle Note
+            const cycleEl = document.getElementById('uiCycleNote');
+            if (d.cache_hit) {
+                cycleEl.style.display = 'none';
+            } else if (d.source_change === false) {
+                cycleEl.textContent = 'Latest source check confirmed the existing macro state.';
+                cycleEl.style.display = 'block';
+            } else if (d.relevant_article_count > 0 && d.source_change === true) {
+                if (d.delta_summary && /No major/i.test(d.delta_summary)) {
+                    cycleEl.textContent = 'New relevant coverage was detected, but not enough to change the macro signal.';
+                } else if (d.delta_summary) {
+                    cycleEl.textContent = 'Fresh articles were added to the market set, adjusting the underlying trajectory.';
+                } else {
+                    cycleEl.textContent = `Reviewed ${d.relevant_article_count} new relevant articles today.`;
+                }
+                cycleEl.style.display = 'block';
+            } else {
+                cycleEl.style.display = 'none';
+            }
+
+            // Timeline Status Note
+            const timelineNoteEl = document.getElementById('uiTimelineNote');
+            if (!initial && !d.cache_hit) {
+                if (d.source_change === true && d.delta_summary && /No major/i.test(d.delta_summary)) {
+                    timelineNoteEl.textContent = 'Current state held after fresh source review.';
+                    timelineNoteEl.style.display = 'block';
+                } else if (d.source_change === false) {
+                    timelineNoteEl.textContent = 'No new macro state recorded this cycle (unchanged).';
+                    timelineNoteEl.style.display = 'block';
+                } else {
+                    timelineNoteEl.style.display = 'none';
+                }
+            } else {
+                timelineNoteEl.style.display = 'none';
+            }
+
             // Layer signals
             if (layer) {
                 const pulseLabel = document.getElementById('uiMoodLabel');
                 pulseLabel.textContent = layer.market_pulse || '—';
                 pulseLabel.style.color = sentimentColor(layer.market_pulse);
+                const rightPanelDriftText = d.drift ? d.drift.status : 'Stable';
+                const rightPanelDriftVal = d.drift ? d.drift.change : 0;
+                let toneLabel = '';
+
+                // We run a localized check so the side panel avoids contradictory labels
+                // if it's "Stable" drift but the text is extremely negative.
+                if (rightPanelDriftText === 'Significant' && rightPanelDriftVal < 0) toneLabel = 'Negative pressure present';
+                else if (rightPanelDriftText === 'Moderate' && rightPanelDriftVal < 0) toneLabel = 'Tone: Cautious';
+                else if (rightPanelDriftText === 'Moderate' && rightPanelDriftVal > 0) toneLabel = 'Tone: Optimistic';
+                else if (rightPanelDriftText === 'Significant' && rightPanelDriftVal > 0) toneLabel = 'Strong positive momentum';
+                else {
+                    const textScan = (d.macro_reasoning || '').toLowerCase() + " " + (d.drivers || []).join(' ').toLowerCase();
+                    const _weak = /weakness|tightening|pressure|cautious|downside/.test(textScan);
+                    const _strong = /strengthening|breakout|easing|upside/.test(textScan);
+                    if (_weak && _strong) toneLabel = 'Tone: Mixed';
+                    else if (_weak) toneLabel = 'Tone: Underlying caution';
+                    else if (_strong) toneLabel = 'Tone: Underlying support';
+                    else toneLabel = 'Tone: Settled';
+                }
+                document.getElementById('uiMoodTone').textContent = toneLabel;
 
                 const climateEl = document.getElementById('uiMacroClimate');
                 const coverageChip = document.getElementById('uiCoverageChip');
@@ -2143,6 +2722,15 @@
                 whyMacro.style.display = 'none';
             }
 
+            // Macro Reasoning
+            const macroReas = document.getElementById('uiMacroReasoning');
+            if (d.macro_reasoning) {
+                macroReas.textContent = d.macro_reasoning;
+                macroReas.style.display = 'block';
+            } else {
+                macroReas.style.display = 'none';
+            }
+
             // Source note + source change status
             const sourceNote = document.getElementById('uiSourceNote');
             if (d.source_breakdown) {
@@ -2152,9 +2740,14 @@
                 sourceNote.textContent = parts.length ? parts.join(' · ') : '';
             }
             const statusEl = document.getElementById('uiSourceChangeStatus');
+            const hasDelta = d.article_delta && d.article_delta.total > 0;
             if (d.source_change_status) {
                 const isNoChange = d.source_change_status.includes('No new');
-                statusEl.textContent = d.source_change_status;
+                let appendDelta = '';
+                if (hasDelta && !isNoChange) {
+                    appendDelta = ` — ${d.article_delta.new} new articles in current cycle (${d.article_delta.total} total relevant)`;
+                }
+                statusEl.textContent = d.source_change_status + appendDelta;
                 statusEl.style.display = 'block';
                 statusEl.style.color = isNoChange ? 'var(--text-muted)' : 'var(--mild-bullish)';
             } else {
@@ -2176,7 +2769,12 @@
                 hlContainer.innerHTML = '<div class="hl-item" style="color:var(--text-muted);">No recent financial headlines available.</div>';
             }
 
-            document.getElementById('uiHeadlineCount').textContent = d.headline_count || d.analyzed_article_count || 0;
+            const hVol = document.getElementById('uiHeadlineVolumeText');
+            if (d.relevant_article_count !== undefined && d.raw_article_count !== undefined) {
+                hVol.innerHTML = `&nbsp;<span style="color:var(--text-muted)">(${d.relevant_article_count} relevant articles analyzed from ${d.raw_article_count} fetched)</span>`;
+            } else {
+                hVol.innerHTML = `&nbsp;(<span id="uiHeadlineCount">${d.headline_count || d.analyzed_article_count || 0}</span> scored)`;
+            }
         }
 
         function getTieredLabel(score) {
@@ -2196,46 +2794,16 @@
                 return;
             }
 
-            // Deduplicate: skip consecutive rows with the same label and score (within 0.01)
-            const deduped = [];
-            let skippedCount = 0;
-            data.forEach(h => {
+            // Trust the backend's gating: if it returns 5 rows, show 5 rows.
+            data.forEach((h, i) => {
                 const label = getTieredLabel(h.average_score);
-                const last = deduped[deduped.length - 1];
-                if (last && last.label === label && Math.abs(last.average_score - h.average_score) < 0.01) {
-                    skippedCount++;
-                    return;
-                }
-                deduped.push({ ...h, label });
-            });
-
-            // If all rows were deduplicated down to one, show a calm note
-            if (deduped.length === 1 && skippedCount > 0) {
-                const h = deduped[0];
-                const d = new Date(h.created_at);
-                const row = document.createElement('div');
-                row.className = 'ht-row';
-                row.innerHTML = `
-            <span class="ht-time">Most recent</span>
-            <span class="ht-val" style="color:${sentimentColor(h.label)}">${h.label} <span style="color:var(--text-muted);font-weight:400;font-size:0.75rem;">(${h.average_score.toFixed(2)})</span></span>
-        `;
-                container.appendChild(row);
-                // Calm informational note
-                const note = document.createElement('div');
-                note.style.cssText = 'font-size:0.75rem;color:var(--text-muted);font-style:italic;padding:0.5rem 0.875rem;';
-                note.textContent = 'No material change in market signal since tracking began.';
-                container.appendChild(note);
-                return;
-            }
-
-            deduped.forEach((h, i) => {
                 const d = new Date(h.created_at);
                 const timeStr = i === 0 ? 'Most recent' : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 const row = document.createElement('div');
                 row.className = 'ht-row';
                 row.innerHTML = `
             <span class="ht-time">${timeStr}</span>
-            <span class="ht-val" style="color:${sentimentColor(h.label)}">${h.label} <span style="color:var(--text-muted);font-weight:400;font-size:0.75rem;">(${h.average_score.toFixed(2)})</span></span>
+            <span class="ht-val" style="color:${sentimentColor(label)}">${label} <span style="color:var(--text-muted);font-weight:400;font-size:0.75rem;">(${h.average_score.toFixed(2)})</span></span>
         `;
                 container.appendChild(row);
             });
@@ -2255,6 +2823,7 @@
                 stockCard.style.display = 'none';
                 skeleton.style.display = 'flex';
                 errorMsg.style.display = 'none';
+                cycleLoadingMessages();
             }
 
             try {
@@ -2266,11 +2835,25 @@
                 const data = await r.json();
                 activeStockData = data;
 
-                if (showLoader) await new Promise(res => setTimeout(res, 750));
-                if (showLoader) { skeleton.style.display = 'none'; stockCard.style.display = 'flex'; }
+                // Sprint 4: Premium loading handling
+                if (showLoader) {
+                    if (data.cache_hit) {
+                        // Fast path for cached data
+                        const textEl = document.getElementById('loadingStatusText');
+                        if (textEl) textEl.textContent = "Using recently analyzed intelligence...";
+                        await new Promise(res => setTimeout(res, 500));
+                    } else {
+                        // Give it a tiny bit of space to feel "analyzed"
+                        await new Promise(res => setTimeout(res, 800));
+                    }
+                    stopLoadingMessages();
+                    skeleton.style.display = 'none';
+                    stockCard.style.display = 'flex';
+                }
 
                 renderStockCard(data, ticker);
             } catch (err) {
+                stopLoadingMessages();
                 if (showLoader) skeleton.style.display = 'none';
                 errorMsg.textContent = err.message;
                 errorMsg.style.display = 'block';
@@ -2283,11 +2866,53 @@
             document.getElementById('uiCompanyName').textContent = data.company_name || '—';
             document.getElementById('uiSector').textContent = data.sector || '—';
 
+            // ── SPRINT 4: ACTIVE INTELLIGENCE PANELS ────────────────────────
+            // 1. Alerts
+            const alertsCont = document.getElementById('alertsContainer');
+            if (data.alerts && data.alerts.length > 0) {
+                alertsCont.innerHTML = '';
+                data.alerts.forEach(a => {
+                    const el = document.createElement('div');
+                    el.className = `alert-item sev-${a.severity}`;
+                    const icon = a.type === 'sentiment' ? '📉' : a.type === 'technical' ? '📈' : '🔔';
+                    el.innerHTML = `<span class="alert-icon">${icon}</span> <span>${a.message}</span>`;
+                    alertsCont.appendChild(el);
+                });
+                alertsCont.style.display = 'flex';
+            } else {
+                alertsCont.style.display = 'none';
+            }
+
+            // 2. What Changed
+            const wcCont = document.getElementById('whatChangedContainer');
+            if (data.what_changed) {
+                const list = document.getElementById('whatChangedList');
+                list.innerHTML = '';
+
+                if (data.what_changed.changes && data.what_changed.changes.length > 0) {
+                    data.what_changed.changes.forEach(c => {
+                        const li = document.createElement('li');
+                        li.textContent = c;
+                        list.appendChild(li);
+                    });
+                } else {
+                    const li = document.createElement('li');
+                    li.textContent = data.what_changed.summary || 'No material change since last analysis';
+                    li.style.listStyleType = 'none';
+                    li.style.fontStyle = 'italic';
+                    li.style.marginLeft = '-1.25rem';
+                    list.appendChild(li);
+                }
+                wcCont.style.display = 'block';
+            } else {
+                wcCont.style.display = 'none';
+            }
+
             // Freshness — distinguish cache hits vs live fetches
             const fresh = document.getElementById('uiStockFreshness');
             fresh.style.display = 'inline';
             if (data.cache_hit) {
-                fresh.textContent = '⚡ Cached · ' + timeAgo(new Date());
+                fresh.textContent = '⚡ Cached result · analyzed ' + timeAgo(new Date()).replace("Updated ", "").toLowerCase();
                 fresh.style.color = 'var(--text-muted)';
                 fresh.title = 'Served from 12-minute cache — no Gemini call was made';
             } else {
@@ -2305,14 +2930,14 @@
                 // Conviction
                 const sent = insight.stock_sentiment || '—';
                 const sentEl = document.getElementById('uiSentiment');
-                sentEl.textContent = sent;
+                sentEl.textContent = 'Direction: ' + sent;
                 sentEl.style.color = sentimentColor(sent);
 
                 const conv = document.getElementById('convictionBlock');
                 conv.style.borderLeftColor = sentimentColor(sent);
 
                 const conf = insight.confidence || '—';
-                document.getElementById('uiConfidence').textContent = conf;
+                document.getElementById('uiConfidence').textContent = 'Conviction: ' + conf;
                 document.getElementById('uiConfidence').style.color = confidenceColor(conf);
 
                 const ctxEl = document.getElementById('uiConfidenceCtx');
@@ -2390,8 +3015,8 @@
                 document.getElementById('uiChangeBadge').textContent = '—';
             }
 
-            // Moving Average indicators
-            renderMAIndicators(data);
+            // Technical Confirmation indicators
+            renderTechnicalAnalysis(data);
 
             // Company signal / event
             const sigTitle = document.getElementById('uiSignalTitle');
@@ -2463,46 +3088,101 @@
             updateWatchlistEntry(ticker, data);
         }
 
-        function renderMAIndicators(data) {
-            const panel  = document.getElementById('maPanel');
-            const ti     = data.insight && data.insight.technical_indicators;
+        function renderTechnicalAnalysis(data) {
+            const section = document.getElementById('techSection');
+            const ta = data.technical_analysis;
 
-            if (!ti || (!ti.ma5 && !ti.ma20 && !ti.ma180)) {
-                panel.style.display = 'none';
+            if (!ta) {
+                section.style.display = 'none';
                 return;
             }
-            panel.style.display = 'block';
+            section.style.display = 'block';
 
-            const cp = parseFloat((data.current_price || '0').replace(',', ''));
-
-            function setChip(chipId, valId, dotId, maValStr) {
-                const maFloat = maValStr ? parseFloat(maValStr.replace(',', '')) : null;
-                document.getElementById(valId).textContent = maValStr ? 'Rs ' + parseFloat(maValStr).toLocaleString('en-IN', {maximumFractionDigits: 2}) : '—';
-                const dot = document.getElementById(dotId);
-                if (maFloat && cp) {
-                    dot.style.background = cp >= maFloat ? 'var(--bullish)' : 'var(--bearish)';
-                    document.getElementById(chipId).style.borderColor =
-                        cp >= maFloat ? 'rgba(74,222,128,0.25)' : 'rgba(248,113,113,0.25)';
-                } else {
-                    dot.style.background = 'var(--text-dim)';
-                }
+            // 1. Header Score
+            const scoreRow = document.getElementById('uiTechScoreRow');
+            if (typeof ta.technical_score === 'number') {
+                scoreRow.textContent = `• ${ta.technical_score.toFixed(2)}`;
+                scoreRow.style.display = 'inline';
+            } else {
+                scoreRow.style.display = 'none';
             }
 
-            setChip('maChip5',   'uiMA5',   'uiMA5Dot',   ti.ma5);
-            setChip('maChip20',  'uiMA20',  'uiMA20Dot',  ti.ma20);
-            setChip('maChip180', 'uiMA180', 'uiMA180Dot', ti.ma180);
+            // 2. Moving Averages
+            const ma = ta.moving_analysis;
+            function setMATech(valId, sigId, maData) {
+                const elVal = document.getElementById(valId);
+                const elSig = document.getElementById(sigId);
+                if (maData && maData.value) {
+                    elVal.textContent = 'Rs ' + parseFloat(maData.value).toLocaleString('en-IN', { maximumFractionDigits: 1 });
+                    const sig = maData.signal || 'Neutral';
+                    elSig.textContent = sig;
+                    elSig.className = 'sig-badge ' + (sig === 'Bullish' ? 'sig-bull' : sig === 'Bearish' ? 'sig-bear' : 'sig-neut');
+                } else {
+                    elVal.textContent = '—';
+                    elSig.textContent = '—';
+                    elSig.className = 'sig-badge sig-neut';
+                }
+            }
+            setMATech('uiTechMA5', 'uiTechMA5Sig', ma.ma5);
+            setMATech('uiTechMA20', 'uiTechMA20Sig', ma.ma20);
+            setMATech('uiTechMA180', 'uiTechMA180Sig', ma.ma180);
 
-            // Signal badge
-            const badge = document.getElementById('uiMASignalBadge');
-            const sig   = ti.ma_signal || 'Neutral';
-            badge.textContent = sig;
-            badge.style.background = sentimentColor(sig) + '33';  // translucent bg
-            badge.style.color      = sentimentColor(sig);
-            badge.style.border     = `1px solid ${sentimentColor(sig)}55`;
+            // 3. Pivot Ladder
+            const pi = ta.pivot_analysis;
+            const price = parseFloat((data.current_price || '0').toString().replace(/,/g, ''));
 
-            // Note
-            const note = document.getElementById('uiMANote');
-            note.textContent = ti.ma_note || '';
+            const pivots = [
+                { id: 'pvS3', val: pi.support?.s3 || pi.s3, label: 'S3' },
+                { id: 'pvS2', val: pi.support?.s2 || pi.s2, label: 'S2' },
+                { id: 'pvS1', val: pi.support?.s1 || pi.s1, label: 'S1' },
+                { id: 'pvPP', val: pi.pp, label: 'Pivot' },
+                { id: 'pvR1', val: pi.resistance?.r1 || pi.r1, label: 'R1' },
+                { id: 'pvR2', val: pi.resistance?.r2 || pi.r2, label: 'R2' },
+                { id: 'pvR3', val: pi.resistance?.r3 || pi.r3, label: 'R3' }
+            ];
+
+            let closest = null;
+            let minDiff = Infinity;
+
+            pivots.forEach(p => {
+                const el = document.getElementById(p.id);
+                const valSpan = el.querySelector('.pivot-val');
+                el.classList.remove('highlight');
+
+                if (p.val) {
+                    valSpan.textContent = parseFloat(p.val).toFixed(1);
+                    const diff = Math.abs(price - p.val);
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        closest = p;
+                    }
+                } else {
+                    valSpan.textContent = '—';
+                }
+            });
+
+            // Highlight closest and set context note
+            const contextNote = document.getElementById('uiPriceContextNote');
+            if (closest && minDiff < (price * 0.02)) { // Only highlight if within 2% margin
+                document.getElementById(closest.id).classList.add('highlight');
+                contextNote.style.display = 'block';
+                const relation = price > closest.val ? 'above' : 'near';
+                contextNote.textContent = `Price is currently ${relation} ${closest.label} support/resistance zone.`;
+            } else if (pi.pp && price > pi.pp) {
+                contextNote.style.display = 'block';
+                contextNote.textContent = `Price is trading above the central Pivot Point.`;
+            } else {
+                contextNote.style.display = 'none';
+            }
+
+            // 4. Summary
+            const summEl = document.getElementById('uiTechSummary');
+            if (ta.technical_summary) {
+                summEl.textContent = ta.technical_summary;
+                summEl.style.display = 'block';
+            } else {
+                summEl.style.display = 'none';
+            }
         }
 
         function renderReasoning(insight) {
@@ -2518,16 +3198,39 @@
             let main = raw, secondary = '';
             if (splitMatch && splitMatch[3]) { main = splitMatch[1]; secondary = splitMatch[3]; }
 
+            // Extract "Overall,"
+            let synthesisLine = "";
+            let cleanedMain = main;
+            let cleanedSecondary = secondary;
+
+            const overallRegex = /(overall,\s*.*)/i;
+            const mainMatch = cleanedMain.match(overallRegex);
+            if (mainMatch) {
+                synthesisLine = mainMatch[1];
+                cleanedMain = cleanedMain.replace(overallRegex, '').trim();
+            } else if (cleanedSecondary) {
+                const secMatch = cleanedSecondary.match(overallRegex);
+                if (secMatch) {
+                    synthesisLine = secMatch[1];
+                    cleanedSecondary = cleanedSecondary.replace(overallRegex, '').trim();
+                }
+            }
+
             let html = '';
             if (isBull) {
-                html += buildList('Bullish Case', 'var(--bullish)', [main]);
-                if (secondary) html += buildList('Risk Factors', 'var(--bearish)', [secondary]);
+                if (cleanedMain) html += buildList('Bullish Case', 'var(--bullish)', [cleanedMain]);
+                if (cleanedSecondary) html += buildList('Risk Factors', 'var(--bearish)', [cleanedSecondary]);
             } else if (isBear) {
-                html += buildList('Bearish Case', 'var(--bearish)', [main]);
-                if (secondary) html += buildList('Supporting Factors', 'var(--bullish)', [secondary]);
+                if (cleanedMain) html += buildList('Bearish Case', 'var(--bearish)', [cleanedMain]);
+                if (cleanedSecondary) html += buildList('Supporting Factors', 'var(--bullish)', [cleanedSecondary]);
             } else {
-                html += buildList('Analysis', 'var(--neutral)', [main]);
+                if (cleanedMain) html += buildList('Analysis', 'var(--neutral)', [cleanedMain]);
             }
+
+            if (synthesisLine) {
+                html += `<div class="ai-body" style="margin-top: 1.25rem; font-size:0.95rem; line-height: 1.6; border-left-color: ${sentimentColor(sent)}; background: rgba(255,255,255,0.03); color: var(--text);"><strong>TAKEAWAY:</strong> ${synthesisLine}</div>`;
+            }
+
             block.innerHTML = html;
         }
 
@@ -2598,14 +3301,67 @@
             return 'Limited signal coverage today. Use this reading as one input, not a standalone conclusion.';
         }
 
+        // ── SPRINT 5: WATCHLIST INTELLIGENCE FEED Logic ────────────────────────
+        async function fetchWatchlistIntelligence() {
+            if (!watchlist.length) {
+                document.getElementById('watchlistIntelligencePanel').style.display = 'none';
+                return;
+            }
+
+            const tickers = watchlist.map(w => w.ticker);
+            try {
+                const r = await fetch(`${API_BASE}/watchlist/intelligence`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tickers })
+                });
+                if (!r.ok) return;
+                const data = await r.json();
+                renderWatchlistFeed(data.items || []);
+            } catch (e) {
+                console.warn('Watchlist intelligence failed:', e);
+            }
+        }
+
+        function renderWatchlistFeed(items) {
+            const panel = document.getElementById('watchlistIntelligencePanel');
+            const container = document.getElementById('watchlistFeedItems');
+
+            if (!items.length) {
+                container.innerHTML = '<div class="feed-empty">No major changes across your watchlist today.</div>';
+                panel.style.display = 'block';
+                return;
+            }
+
+            container.innerHTML = '';
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = `feed-item-card sev-${item.severity}`;
+                card.onclick = () => searchTicker(item.ticker);
+
+                card.innerHTML = `
+                    <div class="feed-item-top">
+                        <span class="feed-item-ticker">${item.ticker}</span>
+                        <span style="font-size:0.7rem;color:var(--text-muted);">${timeAgo(new Date(item.timestamp))}</span>
+                    </div>
+                    <div class="feed-item-headline">${item.headline}</div>
+                    <div class="feed-item-summary">${item.summary}</div>
+                `;
+                container.appendChild(card);
+            });
+            panel.style.display = 'block';
+        }
+
         // ── WATCHLIST ─────────────────────────────────────────────────────────────
         function loadWatchlist() {
             try { watchlist = JSON.parse(localStorage.getItem(WATCHLIST_KEY) || '[]'); } catch { watchlist = []; }
             renderWatchlist(); updateWlCount();
+            fetchWatchlistIntelligence(); // Sprint 5 refresh
         }
         function saveWatchlist() {
             localStorage.setItem(WATCHLIST_KEY, JSON.stringify(watchlist));
             renderWatchlist(); updateWlCount();
+            fetchWatchlistIntelligence(); // Sprint 5 refresh
         }
         function updateWlCount() {
             document.getElementById('wlCount').textContent = watchlist.length;

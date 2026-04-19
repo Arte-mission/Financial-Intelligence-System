@@ -40,3 +40,5 @@ logs/
 .pytest_cache/
 .coverage
 htmlcov/
+backend_helper.py
+scratch/

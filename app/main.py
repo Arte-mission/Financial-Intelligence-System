@@ -27,6 +27,10 @@ async def lifespan(app: FastAPI):
     finally:
         db.close()
         
+    # Start the permanent macro background refresh loop
+    logger.info("Initializing background macro loop...")
+    market.start_macro_refresh_loop()
+        
     yield
     # Shutdown event
     logger.info("Shutting down Nepal Stock Market API.")
