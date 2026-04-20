@@ -254,7 +254,7 @@ def score_article_priority(article: Dict[str, Any]) -> float:
 # ── Time-window constants ──────────────────────────────────────────────────────
 _WINDOW_CORE_H  = 72   # Primary analysis window (3 days)
 _WINDOW_MAX_H   = 168  # Absolute outer limit  (7 days)
-_MIN_CORE_COUNT = 4    # Minimum articles needed before falling back to 7-day window
+_MIN_CORE_COUNT = 8    # Minimum articles needed before falling back to 7-day window
 
 
 def _parse_article_age_hours(article: Dict[str, Any]) -> Optional[float]:

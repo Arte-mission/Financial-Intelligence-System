@@ -2394,8 +2394,14 @@
         // ── TIME UTILS ────────────────────────────────────────────────────────────
         function timeAgo(d) {
             const sec = Math.floor((Date.now() - d) / 1000);
-            if (sec < 60) return 'Updated just now';
-            return `Updated ${Math.floor(sec / 60)}m ago`;
+            if (sec < 60) return 'just now';
+            const totalMin = Math.floor(sec / 60);
+            if (totalMin < 60) return `${totalMin}m ago`;
+            const h = Math.floor(totalMin / 60);
+            const m = totalMin % 60;
+            if (h < 24) return m > 0 ? `${h}h ${m}m ago` : `${h}h ago`;
+            const d2 = Math.floor(h / 24);
+            return `${d2}d ago`;
         }
 
         function startCountdown() {
@@ -2502,10 +2508,9 @@
             checkEl.style.display = 'inline';
             upEl.style.display = 'inline';
 
-            checkEl.textContent = 'Checked ' + (d.last_checked ? timeAgo(new Date(d.last_checked)) : timeAgo(new Date()));
-            // Only show updated separately if it's materially different, else hide it to avoid clutter
-            const upTimeStr = d.last_updated ? timeAgo(new Date(d.last_updated)) : 'Recently';
-            upEl.textContent = 'Signal changed ' + upTimeStr.replace('Updated ', '').toLowerCase();
+            checkEl.textContent = 'Checked ' + (d.last_checked ? timeAgo(new Date(d.last_checked)) : 'just now');
+            const upTimeStr = d.last_updated ? timeAgo(new Date(d.last_updated)) : 'recently';
+            upEl.textContent = 'Signal changed ' + upTimeStr;
 
             // Snapshot bar
             const layer = d.macro_layer_status;
@@ -2912,7 +2917,7 @@
             const fresh = document.getElementById('uiStockFreshness');
             fresh.style.display = 'inline';
             if (data.cache_hit) {
-                fresh.textContent = '⚡ Cached result · analyzed ' + timeAgo(new Date()).replace("Updated ", "").toLowerCase();
+                fresh.textContent = '⚡ Cached result · analyzed ' + timeAgo(new Date());
                 fresh.style.color = 'var(--text-muted)';
                 fresh.title = 'Served from 12-minute cache — no Gemini call was made';
             } else {

@@ -395,8 +395,17 @@ def _process_market_data(db: Session) -> MarketMoodResponse:
                 query_used=query_used,
             ))
 
-        article_drivers = extract_drivers(title, score, category, materiality)
-        drivers_list.extend(article_drivers)
+        # Driver extraction constraint: only articles within the 72-hour core window
+        # are eligible as primary drivers. Fallback articles (_age_h > 72) may
+        # contribute weakly to sentiment scoring via recency_weight, but must NOT
+        # generate actionable driver phrases that surface in the UI or delta summary.
+        article_age_h = article_data.get("_age_h")  # stamped by apply_recency_filter_and_weight
+        is_core_window = (article_age_h is None or article_age_h <= 72)
+        if is_core_window:
+            article_drivers = extract_drivers(title, score, category, materiality)
+            drivers_list.extend(article_drivers)
+        # else: fallback article — silently skip driver extraction
+
 
     db.commit()
 
